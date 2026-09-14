@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
-import { cx } from "@/lib/utils";
 
 type Theme = "dark" | "light";
 
@@ -61,12 +60,12 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
-      className={cx("btn", "sm", "quiet")}
+      className="icon-btn"
       onClick={toggle}
       aria-label={`Switch to ${next} theme`}
+      title={`Switch to ${next} theme`}
     >
-      <Icon size={14} aria-hidden />
-      {theme === "dark" ? "Light" : "Dark"} theme
+      <Icon size={15} aria-hidden />
     </button>
   );
 }
