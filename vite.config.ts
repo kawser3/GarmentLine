@@ -17,7 +17,9 @@ const BLOCKS_PREFIXES = [
   "/data",
   "/os",
   "/logic", // Workflow webhooks and Mail/Send
-  "/monitor", // Monitor/GetMonitorList and GetIncidentList
+  "/monitor", // Monitor uptime and health
+  "/localization", // Language/Gets and the UILM key file the i18n overlay reads
+  "/utilities", // Magic links for the buyer-facing approval report
 ];
 
 /** Deploy modes, each tied to a branch and an env file of the same name. */
@@ -39,7 +41,7 @@ export default defineConfig(({ mode }) => {
     }
     if (!env.VITE_BLOCKS_PROJECT_KEY) {
       console.warn(
-        `\n[blocks-incident] ${file} has no VITE_BLOCKS_PROJECT_KEY.\n` +
+        `\n[garmentline] ${file} has no VITE_BLOCKS_PROJECT_KEY.\n` +
           `  The build will succeed, but the app will show its configuration diagnostic\n` +
           `  unless the deployment supplies BLOCKS_PROJECT_KEY as a runtime env var.\n` +
           `  (.env.stg and .env.prod ship blank on purpose — fill them in when those\n` +
@@ -70,7 +72,7 @@ export default defineConfig(({ mode }) => {
 
   if (domain && !useHttps) {
     console.warn(
-      `\n[blocks-incident] VITE_DEV_DOMAIN=${domain} but no cert in .cert/ — serving HTTP.\n` +
+      `\n[garmentline] VITE_DEV_DOMAIN=${domain} but no cert in .cert/ — serving HTTP.\n` +
         `  SSO will not work on a domain over http. Run \`npm run cert\`.\n`,
     );
   }
@@ -79,7 +81,7 @@ export default defineConfig(({ mode }) => {
   // silently never receive the session cookie. Fail loudly instead of debugging 401s.
   if (!domain && !proxyTarget) {
     console.warn(
-      `\n[blocks-incident] Running on localhost with no VITE_BLOCKS_PROXY_TARGET.\n` +
+      `\n[garmentline] Running on localhost with no VITE_BLOCKS_PROXY_TARGET.\n` +
         `  Authenticated calls will 401: the Blocks session cookie is domain-scoped and\n` +
         `  cannot be stored for a localhost origin without the same-origin proxy.\n` +
         `  Set VITE_BLOCKS_PROXY_TARGET=https://blocksapi.seliselocal.com in .env.local.\n`,

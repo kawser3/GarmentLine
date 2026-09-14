@@ -1,0 +1,37 @@
+{
+  "password": "GarmentLine#2026",
+  "users": [
+    {
+      "email": "nusrat.garmentline@example.com",
+      "firstName": "Nusrat",
+      "lastName": "Jahan",
+      "role": "merchandiser",
+      "userId": "e025207d-19d8-4fdf-aaa5-abcd4350d4e7",
+      "active": true
+    },
+    {
+      "email": "rafiqul.garmentline@example.com",
+      "firstName": "Rafiqul",
+      "lastName": "Islam",
+      "role": "line-supervisor",
+      "userId": "34a73605-a590-4f26-9ea1-402f886a6514",
+      "active": true
+    },
+    {
+      "email": "qa.garmentline@example.com",
+      "firstName": "Shamima",
+      "lastName": "Akter",
+      "role": "qa-inspector",
+      "userId": "a4a8203f-e0d4-4fe4-a500-0a9ef32c0a4c",
+      "active": true
+    },
+    {
+      "email": "gm.garmentline@example.com",
+      "firstName": "Anwar",
+      "lastName": "Hossain",
+      "role": "factory-manager",
+      "userId": "c4f3355b-cc5d-4ae4-81e5-d3422199142a",
+      "active": true
+    }
+  ]
+}
