@@ -6268,32 +6268,10 @@ th a:focus-visible {
   scroll-padding-top: 44px; /* the sticky thead inside the scroller */
 }
 
-/* ------------------------------------------------- equal-height card rows ----
- *
- * `.grid` sets `align-items: start` so a short card never stretches to match a
- * tall neighbour — right for mixed content, wrong for a row of peers. The three
- * "issues by …" cards are the same question asked three ways, and unequal
- * heights made them read as three unrelated blocks of differing importance.
- * `.equal` opts a row back into stretching; `.three` fixes the track count so
- * they stay one row until the viewport genuinely cannot hold it.
- */
-.grid.equal {
-  align-items: stretch;
-}
-.grid.equal > .card {
-  display: flex;
-  flex-direction: column;
-}
-/* The body takes the slack, so the heads stay aligned across the row. */
-.grid.equal > .card > .card-body {
-  flex: 1;
-}
-.grid.three {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-@media (max-width: 1180px) {
-  .grid.three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (max-width: 760px) {
-  .grid.three { grid-template-columns: minmax(0, 1fr); }
+
+/* A chart whose natural width is smaller than the card it sits in. Capped and
+   left-aligned so the empty space reads as margin rather than as a layout that
+   failed to fill. */
+.chart-inset {
+  max-width: 620px;
 }

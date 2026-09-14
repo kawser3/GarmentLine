@@ -153,17 +153,19 @@ export function DashboardPage() {
         )}
 
         {/*
-          One row, three cards, equal height — `.grid.equal` stretches them, which
-          the default `align-items: start` does not, so a line with six entries no
-          longer makes the card beside it look unfinished.
+          Full width, one per row. Three across squeezed each chart into a third
+          of the page, where a ranked bar has no room to BE ranked — the bars
+          were stubs and the labels truncated, which is the one thing a bar chart
+          must not do. Across the full width the longest bar is unmistakable and
+          every line name is readable, which is the whole question these three
+          cards answer.
 
-          Bars for line and buyer because the question is "which is worst", and
-          ranked length answers that in one look. A pie for type because the
-          question there is "what is the mix" — a share of a whole, which is the
-          one thing a pie does better than a bar. Counts, so formatValue is
-          passed: the default writes money.
+          Bars for line and buyer because the question is "which is worst" and
+          length answers that in one look. A donut for type because that question
+          is "what is the mix" — a share of a whole, the one thing a donut does
+          better than a bar. Counts, so formatValue is passed: the default is money.
         */}
-        <div className="grid equal three">
+        <div className="grid one">
           <Card title={t("page.dashboard.byLine")} sub={t("page.dashboard.last30")}>
             <CategoryBars
               data={toPoints(byLine)}
@@ -181,11 +183,16 @@ export function DashboardPage() {
           </Card>
 
           <Card title={t("page.dashboard.byType")} sub={t("page.dashboard.last30")}>
-            <CategoryPie
-              data={toPoints(byType)}
-              centerLabel={String(recent.length)}
-              emptyLabel={t("empty.nothingThisMonth")}
-            />
+            {/* The donut pairs a fixed-width dial with a legend. Given the whole
+                page that legend would run for a thousand pixels of white space,
+                so the pair is capped and sits left — deliberate, not stranded. */}
+            <div className="chart-inset">
+              <CategoryPie
+                data={toPoints(byType)}
+                centerLabel={String(recent.length)}
+                emptyLabel={t("empty.nothingThisMonth")}
+              />
+            </div>
           </Card>
         </div>
 
