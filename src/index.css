@@ -16,7 +16,8 @@
    quantity columns align on the decimal.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&display=swap');
+/* Fonts are requested once from index.html — Inter, JetBrains Mono and Noto
+   Sans Bengali in a single <link>. See the note there. */
 
 :root {
   /*
@@ -6305,4 +6306,30 @@ th a:focus-visible {
 }
 @media (max-width: 760px) {
   .grid.three { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ------------------------------------------------------------ বাংলা ----
+ *
+ * Bengali carries vowel signs above and below the মাত্রা and stacks its
+ * conjuncts, so a line box sized for Latin sits tight on it: the matras crowd
+ * the line above and long conjuncts touch the one below. Latin is untouched —
+ * this applies only while the document is in Bangla, which App.tsx sets on
+ * <html lang> when the locale changes.
+ */
+:root:lang(bn) body,
+:root[lang="bn-BD"] body {
+  line-height: 1.68;
+}
+:root:lang(bn) .card-head h3,
+:root[lang="bn-BD"] .card-head h3,
+:root:lang(bn) .page-head h1,
+:root[lang="bn-BD"] .page-head h1 {
+  line-height: 1.4;
+}
+/* Table cells and nav items set their own tighter boxes; give those room too. */
+:root[lang="bn-BD"] .table th,
+:root[lang="bn-BD"] .table td,
+:root[lang="bn-BD"] .nav-item,
+:root[lang="bn-BD"] .btn {
+  line-height: 1.55;
 }

@@ -467,7 +467,7 @@ export const bnBD: Dict = {
   "auth.signIn.errorTitle": "সাইন ইন ব্যর্থ হয়েছে",
   "auth.signIn.notConfigured": "সাইন ইন কনফিগার করা হয়নি",
   "auth.signIn.notConfiguredBodyA": "এই বিল্ডে কোনো আইডেন্টিটি প্রোভাইডার সেট করা নেই।",
-  "auth.signIn.notConfiguredBodyB": "এনভায়রনমেন্টে OIDC ক্লায়েন্ট আইডি দিন,",
+  "auth.signIn.notConfiguredBodyB": "এনভায়রনমেন্টে OIDC ক্লায়েন্ট আইডি দিন,",
   "auth.signIn.notConfiguredBodyC": "তারপর পেজটি রিলোড করুন।",
   "auth.session.checking": "সেশন যাচাই করা হচ্ছে…",
   "auth.callback.working": "সাইন ইন সম্পন্ন হচ্ছে…",

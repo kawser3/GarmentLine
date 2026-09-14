@@ -3,11 +3,19 @@
   <head>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Inter for the interface, JetBrains Mono for figures: a dashboard read
-         under pressure needs its numbers to line up in columns. -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
-      rel="stylesheet" />
+    <!--
+      Inter for the interface, JetBrains Mono for figures: a dashboard read under
+      pressure needs its numbers to line up in columns. Noto Sans Bengali for
+      বাংলা, and it has to be FETCHED, not merely named — the font stack listed
+      it while nothing loaded it, so every Bangla screen fell through to whatever
+      the OS happened to have. A fallback that cannot shape Bengali draws each
+      consonant and its vowel sign separately instead of composing them, which is
+      what made the words unreadable rather than merely plain.
+
+      One request for all three: the stylesheet used to @import Inter a second
+      time, and an @import blocks rendering where a <link> does not.
+    -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <meta charset="UTF-8" />
     <!-- A running stitch resolving into a check — see public/favicon.svg. SVG only:
          there is no build step here that rasterises, and a <link> pointing at a PNG
