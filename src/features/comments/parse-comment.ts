@@ -171,12 +171,25 @@ const DIRECTIONS: Direction[] = [
   { re: /tight|fita|i?snug/i, toWhat: (p) => `${p} is tight — loosen it` },
   { re: /loose|dhila/i, toWhat: (p) => `${p} is loose — tighten it` },
   { re: /shad(e|ing)|colou?r|moyla|dag/i, toWhat: (p) => `${p} shows shading — match the approved swatch` },
+  /* "thik nai" / "thik nei" — the flat "it is not right", with no measurement. */
+  { re: /thik\s*(nai|nei|na)\b/i, toWhat: (p) => `${p} is not to spec — check against the approved sample` },
   { re: /open|khe(ng)?e|gap/i, toWhat: (p) => `${p} shows gaps — correct the workmanship` },
   { re: /twist|bengka|baka/i, toWhat: (p) => `${p} is twisted — correct alignment` },
 ];
 
 /** Praise and asides that must not become actions. */
 const SKIP_CLAUSE = /thik\s*ache|thik\s*ase|ok(\s*ache)?|valo|good|perfect|no\s*problem|nice|bhalo/i;
+
+/**
+ * Something is wrong here.
+ *
+ * Checked BEFORE praise, because Banglish runs the two together without
+ * punctuation to separate them: "body length thik nai finishing valo hoyeche" is
+ * a fault and a compliment in one breath. Skipping any clause that mentioned
+ * praise threw the fault away with it and the parse returned nothing at all.
+ */
+const NEGATIVE =
+  /\b(nai|nei|na)\b|kom|beshi|boro|chhoto|dhila|fita|wide|tight|loose|short|long|uneven|broken|missing|shad(e|ing)|dag|moyla|kharap|bad|problem|twist|bengka|baka|gap|open|khe/i;
 
 function urgencyOf(clause: string): Severity {
   if (/ekdom|urgent|asap|serious|must|immediately/i.test(clause)) return "Critical";
@@ -187,9 +200,14 @@ function urgencyOf(clause: string): Severity {
 
 function parseLocally(raw: string): ParsedAction[] {
   const clauses = raw
-    .split(/[,.;!?]+|\bbut\b|\bkintu\b|\bar ki\b|\bohho\b/i)
+    /* Banglish is written without much punctuation, so the connectives have to
+       act as boundaries too — otherwise a whole message is one clause and the
+       first rule that matches speaks for all of it. */
+    .split(/[,.;!?]+|\bbut\b|\bkintu\b|\bar ki\b|\bohho\b|\bar\b|\btobe\b|\bebong\b/i)
     .map((c) => c.trim())
-    .filter((c) => c.length > 3 && !SKIP_CLAUSE.test(c));
+    .filter((c) => c.length > 3)
+    /* Praise is only praise when nothing in the clause is also wrong. */
+    .filter((c) => !SKIP_CLAUSE.test(c) || NEGATIVE.test(c));
 
   const out: ParsedAction[] = [];
   for (const clause of clauses) {

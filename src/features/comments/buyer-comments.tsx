@@ -211,7 +211,7 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
       {mayWork ? (
         <div className="stack">
           <div className="grid-2">
-            <Field label={t("ai.channel")}>
+            <Field label={t("ai.channel")} hint={t("ai.channelHint")}>
               <select className="input" value={channel} onChange={(e) => setChannel(e.target.value as typeof channel)}>
                 {CHANNELS.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
@@ -242,7 +242,14 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
         </div>
       ) : null}
 
-      {drafts.length > 0 && (
+      {/*
+        The banner renders whenever a parse has RUN, not only when it produced
+        rows. Gated on drafts.length it vanished in the one case a reader most
+        needs it: the engine fell back, proposed nothing, and the screen said
+        nothing at all — so a failed AI call was indistinguishable from a comment
+        with no problems in it.
+      */}
+      {engineNote && (
         <div className="stack">
           <p>
             <Badge tone={engineNote.startsWith("Proposed by the Blocks AI") ? "success" : "warning"}>
@@ -250,6 +257,9 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
             </Badge>{" "}
             <span className="muted">{engineNote}</span>
           </p>
+          {drafts.length === 0 ? (
+            <Empty title={t("ai.noneProposed")}>{t("ai.noneProposedHint")}</Empty>
+          ) : (
           <TableWrap>
 
               <thead>
@@ -320,10 +330,8 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
                 ))}
               </tbody>
             </TableWrap>
-          <p className="muted">
-            Nothing above exists as an issue yet. Accepting a row raises it through the normal
-            path — owner, due date, and the repeat-defect rule included.
-          </p>
+          )}
+          {drafts.length > 0 && <p className="muted">{t("ai.notYetIssues")}</p>}
         </div>
       )}
 
