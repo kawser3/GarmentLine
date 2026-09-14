@@ -62,7 +62,7 @@ export function DashboardPage() {
   }, [scoped]);
 
   if (all.error) return <ErrorAlert error={all.error} />;
-  if (all.isPending) return <Loading label="Loading the management view…" />;
+  if (all.isPending) return <Loading label={t("detail.loading")} />;
 
   const open = scoped.filter((i) => OPEN_STATUSES.includes(i.Status));
   const live = (alerts.data ?? []).filter((a) => !a.Acknowledged);
@@ -96,14 +96,14 @@ export function DashboardPage() {
       <div className="grid">
         <Card span title={t("page.dashboard.card")} sub={t("page.dashboard.cardSub")}>
           <div className="grid stats">
-            <Stat label="Open issues" value={String(open.length)}
-              hint={`${recent.length} raised in the last 30 days`} />
-            <Stat label="Worst buyer" value={worstBuyer?.[0] ?? "—"}
-              hint={worstBuyer ? `${worstBuyer[1]} issues` : "no issues this month"} />
-            <Stat label="Worst line" value={worstLine?.[0] ?? "—"}
-              hint={worstLine ? `${worstLine[1]} issues` : "no issues this month"} />
-            <Stat label="Worst issue type" value={worstType?.[0] ?? "—"}
-              hint={worstType ? `${worstType[1]} occurrences` : "no issues this month"} />
+            <Stat label={t("stat.openIssues")} value={String(open.length)}
+              hint={t("stat.raisedLast30", { n: recent.length })} />
+            <Stat label={t("stat.worstBuyer")} value={worstBuyer?.[0] ?? "—"}
+              hint={worstBuyer ? t("stat.nIssues", { n: worstBuyer[1] }) : t("stat.noneThisMonth")} />
+            <Stat label={t("stat.worstLine")} value={worstLine?.[0] ?? "—"}
+              hint={worstLine ? t("stat.nIssues", { n: worstLine[1] }) : t("stat.noneThisMonth")} />
+            <Stat label={t("stat.worstType")} value={worstType?.[0] ?? "—"}
+              hint={worstType ? t("stat.nOccurrences", { n: worstType[1] }) : t("stat.noneThisMonth")} />
           </div>
         </Card>
 
@@ -123,7 +123,7 @@ export function DashboardPage() {
                     <td><strong>{lineName.get(a.LineId) ?? "—"}</strong></td>
                     <td><Badge tone="danger">{a.IssueType}</Badge></td>
                     <td>{a.Occurrences}</td>
-                    <td>{a.WindowDays} days</td>
+                    <td>{t("stat.nDays", { n: a.WindowDays })}</td>
                     <td>{formatDate(a.DetectedAt, locale)}</td>
                     <td>
                       {(a.IssueIds ?? []).map((id, n) => (
@@ -178,12 +178,12 @@ export function DashboardPage() {
             sub={t("page.dashboard.costSub")}
           >
             <div className="grid stats">
-              <Stat label="Styles with open issues" value={String(atRisk.length)} />
-              <Stat label="Units at risk" value={unitsAtRisk.toLocaleString()} hint="pieces across those styles" />
+              <Stat label={t("stat.stylesAtRisk")} value={String(atRisk.length)} />
+              <Stat label={t("stat.unitsAtRisk")} value={unitsAtRisk.toLocaleString()} hint={t("stat.unitsHint")} />
               <Stat
-                label="Chargeback exposure"
+                label={t("stat.chargeback")}
                 value={`${minPct}–${maxPct}%`}
-                hint="of order value, per the buyer contracts"
+                hint={t("stat.chargebackHint")}
                 tone="neg"
               />
             </div>

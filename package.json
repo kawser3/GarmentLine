@@ -16,7 +16,8 @@
     "schemas": "node scripts/01-define-schemas.mjs",
     "seed": "node scripts/04-seed.mjs",
     "bootstrap": "node scripts/bootstrap.mjs",
-    "docker:build": "docker build -t garmentline:local ."
+    "docker:build": "docker build -t garmentline:local .",
+    "test": "npx --yes tsx --tsconfig tsconfig.app.json src/features/i18n/i18n.test.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.7",
@@ -41,5 +42,7 @@
     "typescript-eslint": "^8.18.2",
     "vite": "^6.0.5"
   },
-  "engines": { "node": ">=22" }
+  "engines": {
+    "node": ">=22"
+  }
 }

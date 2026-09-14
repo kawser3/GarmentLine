@@ -10,7 +10,7 @@ import { issueEvent } from "@/features/issues/history";
 import {
   canCloseIssue, canRecordCorrection, canVerifyIssue, useAuthStore,
 } from "@/stores/auth";
-import { useI18nStore } from "@/features/i18n/i18n";
+import { useI18nStore, useT } from "@/features/i18n/i18n";
 import { formatDate, formatClock } from "@/lib/format";
 
 /**
@@ -31,6 +31,7 @@ export function IssueDetailPage() {
   const { id = "" } = useParams();
   const user = useAuthStore((s) => s.user);
   const locale = useI18nStore((s) => s.locale);
+  const t = useT();
 
   const all = issuesCrud.useAll();
   const events = issueEvents.useAll();
@@ -57,8 +58,8 @@ export function IssueDetailPage() {
     [events.data, id]);
 
   if (all.error) return <ErrorAlert error={all.error} />;
-  if (all.isPending) return <Loading label="Loading issue…" />;
-  if (!issue) return <Empty title="Issue not found">It may have been removed.</Empty>;
+  if (all.isPending) return <Loading label={t("detail.loading")} />;
+  if (!issue) return <Empty title={t("detail.notFound")}>{t("detail.notFoundBody")}</Empty>;
 
   const style = (styles.data ?? []).find((s) => s.ItemId === issue.StyleId);
   const line = (lines.data ?? []).find((l) => l.ItemId === issue.LineId);
@@ -110,28 +111,28 @@ export function IssueDetailPage() {
     <div className="grid one">
       <Card
         title={issue.Title}
-        sub={`${issue.Type} · ${issue.Severity} · raised by ${issue.RaisedByName || "unknown"}`}
-        actions={<Link to="/issues"><Button variant="quiet" size="sm">Back to issues</Button></Link>}
+        sub={`${issue.Type} · ${issue.Severity} · ${t("detail.raisedBy")} ${issue.RaisedByName || t("detail.unknown")}`}
+        actions={<Link to="/issues"><Button variant="quiet" size="sm">{t("detail.backToIssues")}</Button></Link>}
       >
         <p>{issue.Description}</p>
         <dl className="kv">
-          <dt>Status</dt><dd><Badge>{STATUS_LABEL[issue.Status]}</Badge></dd>
-          <dt>Style</dt><dd>{style ? `${style.StyleCode} — ${style.Name}` : "—"}</dd>
-          <dt>Buyer</dt><dd>{buyer?.Name ?? "—"}</dd>
-          <dt>Line</dt><dd>{line?.Name ?? "—"}</dd>
-          <dt>Department</dt><dd>{issue.Department}</dd>
-          <dt>Owner</dt><dd>{issue.OwnerName || "—"}</dd>
-          <dt>Due</dt><dd>{issue.DueDate ? formatDate(issue.DueDate, locale) : "—"}</dd>
+          <dt>{t("col.status")}</dt><dd><Badge>{STATUS_LABEL[issue.Status]}</Badge></dd>
+          <dt>{t("col.style")}</dt><dd>{style ? `${style.StyleCode} — ${style.Name}` : "—"}</dd>
+          <dt>{t("col.buyer")}</dt><dd>{buyer?.Name ?? "—"}</dd>
+          <dt>{t("col.line")}</dt><dd>{line?.Name ?? "—"}</dd>
+          <dt>{t("raise.department")}</dt><dd>{issue.Department}</dd>
+          <dt>{t("col.owner")}</dt><dd>{issue.OwnerName || "—"}</dd>
+          <dt>{t("col.due")}</dt><dd>{issue.DueDate ? formatDate(issue.DueDate, locale) : "—"}</dd>
         </dl>
       </Card>
 
       <Card
-        title="History"
-        sub="Append-only. Entries can be added, never edited or deleted."
+        title={t("detail.history")}
+        sub={t("detail.historySub")}
       >
         {failure ? <ErrorAlert error={failure} /> : null}
         {timeline.length === 0 ? (
-          <Empty title="Nothing recorded yet" />
+          <Empty title={t("detail.nothingYet")} />
         ) : (
           <ol className="timeline">
             {timeline.map((e) => (
@@ -153,33 +154,33 @@ export function IssueDetailPage() {
           </ol>
         )}
 
-        <Field label="Add to the history">
+        <Field label={t("detail.addToHistory")}>
           <textarea
             className="input"
             rows={3}
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="What did you find, or what did you change?"
+            placeholder={t("detail.addPlaceholder")}
           />
         </Field>
 
         <div className="row-actions">
-          <Button onClick={comment} disabled={busy || !note.trim()}>Add comment</Button>
+          <Button onClick={comment} disabled={busy || !note.trim()}>{t("detail.addComment")}</Button>
           {nexts.length > 0 ? (
             <>
               <Select value={target} onChange={(e) => setTarget(e.target.value as Status)}>
-                <option value="">Move to…</option>
+                <option value="">{t("detail.moveTo")}</option>
                 {nexts.map((n) => <option key={n} value={n}>{STATUS_LABEL[n]}</option>)}
               </Select>
               <Button variant="primary" onClick={move} disabled={busy || !target}>
-                Record change
+                {t("detail.recordChange")}
               </Button>
             </>
           ) : (
             <span className="muted">
               {NEXT_STATUS[issue.Status].length === 0
-                ? "This issue is settled."
-                : "Your role cannot make the next change on this issue."}
+                ? t("detail.settled")
+                : t("detail.roleCannotMove")}
             </span>
           )}
         </div>
