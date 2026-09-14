@@ -95,7 +95,7 @@ export function DashboardPage() {
       />
       <div className="grid">
         <Card span title={t("page.dashboard.card")} sub={t("page.dashboard.cardSub")}>
-          <div className="stats">
+          <div className="grid stats">
             <Stat label="Open issues" value={String(open.length)}
               hint={`${recent.length} raised in the last 30 days`} />
             <Stat label="Worst buyer" value={worstBuyer?.[0] ?? "—"}
@@ -177,7 +177,7 @@ export function DashboardPage() {
             title={t("page.dashboard.cost")}
             sub={t("page.dashboard.costSub")}
           >
-            <div className="stats">
+            <div className="grid stats">
               <Stat label="Styles with open issues" value={String(atRisk.length)} />
               <Stat label="Units at risk" value={unitsAtRisk.toLocaleString()} hint="pieces across those styles" />
               <Stat
