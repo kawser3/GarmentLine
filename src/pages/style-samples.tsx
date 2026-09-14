@@ -3,7 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { Badge, Button, Card, Empty, ErrorAlert, Field, Loading, TableWrap } from "@/components/ui";
 import {
   approvals as approvalsCrud, buyers, sampleVersions, stylesCrud,
-  type ApprovalRecord, type Decision,
+  SAMPLE_TYPES,
+  type ApprovalRecord, type Decision, type SampleType,
 } from "@/features/data/garment-schemas";
 import { BuyerCommentsPanel } from "@/features/comments/buyer-comments";
 import { notifyRoles, sendSampleDecisionMail } from "@/features/notify/blocks-push";
@@ -41,6 +42,12 @@ export function StyleSamplesPage() {
   const [failure, setFailure] = useState<unknown>(null);
   const [pushNote, setPushNote] = useState("");
 
+  /* Submit-version form: the next version number per type is derived, not typed. */
+  const addVersion = sampleVersions.useCreate();
+  const [svType, setSvType] = useState<SampleType>("PP");
+  const [svNotes, setSvNotes] = useState("");
+  const [svBusy, setSvBusy] = useState(false);
+
   const style = useMemo(
     () => (styles.data ?? []).find((s) => s.ItemId === styleId), [styles.data, styleId]);
 
@@ -73,6 +80,29 @@ export function StyleSamplesPage() {
   const buyer = (buyerList.data ?? []).find((b) => b.ItemId === style.BuyerId);
   const approved = mine.find((v) => (recordsFor.get(v.ItemId) ?? [])[0]?.Decision === "Approved");
   const mayApprove = canApproveSample(user);
+
+  async function submitVersion() {
+    setSvBusy(true);
+    setFailure(null);
+    try {
+      const nextNo =
+        mine.filter((v) => v.Type === svType).reduce((m, v) => Math.max(m, v.VersionNo), 0) + 1;
+      await addVersion.mutateAsync({
+        StyleId: styleId,
+        Type: svType,
+        VersionNo: nextNo,
+        Status: "Submitted",
+        SubmittedAt: new Date().toISOString(),
+        EvidenceFileIds: [],
+        Notes: svNotes.trim(),
+      });
+      setSvNotes("");
+    } catch (e) {
+      setFailure(e);
+    } finally {
+      setSvBusy(false);
+    }
+  }
 
   async function decide(versionId: string, decision: Decision) {
     setBusyOn(versionId + decision);
@@ -242,6 +272,35 @@ export function StyleSamplesPage() {
           </Field>
         )}
       </Card>
+
+      {mayApprove && (
+        <Card
+          span
+          title="Submit a sample version"
+          sub="The version number follows the type; the decision on it is a separate, recorded act."
+        >
+          <div className="stack">
+            <div className="grid-2">
+              <Field label="Type">
+                <select className="input" value={svType} onChange={(e) => setSvType(e.target.value as SampleType)}>
+                  {SAMPLE_TYPES.map((v) => <option key={v} value={v}>{v}</option>)}
+                </select>
+              </Field>
+              <Field label="Note">
+                <input
+                  className="input" value={svNotes} onChange={(e) => setSvNotes(e.target.value)}
+                  placeholder="What changed since the last version"
+                />
+              </Field>
+            </div>
+            <div>
+              <Button variant="primary" disabled={svBusy} onClick={() => void submitVersion()}>
+                {svBusy ? "Submitting…" : "Submit version"}
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
 
       <BuyerCommentsPanel styleId={styleId} buyerId={style.BuyerId} />
     </div>

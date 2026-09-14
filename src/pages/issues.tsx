@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Badge, Card, ErrorAlert, Empty, Loading, TableWrap } from "@/components/ui";
+import { Badge, Button, Card, ErrorAlert, Empty, Loading, TableWrap } from "@/components/ui";
 import { PageHead } from "@/components/layout";
 import { FilterToolbar, useRowFilter } from "@/components/table-toolbar";
 import {
@@ -9,7 +9,7 @@ import {
   type Issue, type Severity, type Status,
 } from "@/features/data/garment-schemas";
 import { visibleIssues } from "@/features/issues/scope";
-import { useAuthStore } from "@/stores/auth";
+import { canRaiseIssue, useAuthStore } from "@/stores/auth";
 import { useI18nStore, useT } from "@/features/i18n/i18n";
 import { formatDate } from "@/lib/format";
 
@@ -70,6 +70,11 @@ export function IssuesPage() {
       <PageHead
         title={t("nav.issues")}
         description={t("page.issues.desc")}
+        actions={canRaiseIssue(user) && (
+          <Link to="/issues/new">
+            <Button variant="primary" size="sm">+ {t("raise.title")}</Button>
+          </Link>
+        )}
       />
       <div className="grid one">
         <Card title={t("page.issues.card")} sub={t("page.issues.cardSub")}>

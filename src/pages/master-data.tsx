@@ -1,123 +1,89 @@
-import { Card, Empty, ErrorAlert, Loading, TableWrap } from "@/components/ui";
+import { useMemo } from "react";
 import { PageHead } from "@/components/layout";
-import { buyers, linesCrud, stylesCrud } from "@/features/data/garment-schemas";
-import { useI18nStore, useT } from "@/features/i18n/i18n";
-import { formatDate } from "@/lib/format";
+import { MasterTable, type FieldSpec } from "@/features/admin/master-table";
+import {
+  buyers, linesCrud, stylesCrud,
+  type Buyer, type Line, type Style,
+} from "@/features/data/garment-schemas";
+import { useT } from "@/features/i18n/i18n";
 
 /**
  * The factory's reference tables: buyers, styles, lines.
  *
- * One page per table, linked straight from the sidebar — the configuration group
- * is the order of the app: production first, the records it links to after. Each
- * page is a full-width card; the grid wrapper owns the spacing between blocks.
+ * One page per table, linked straight from the sidebar, each running the shared
+ * config-driven register: search, inline edit, add form, deactivate, delete with
+ * confirmation. The rows here are EDITABLE on purpose — master data describes the
+ * organisation and changes with it. The registers of record (issues, approvals)
+ * are append-only and live elsewhere.
  */
 export function BuyersPage() {
   const t = useT();
-  const q = buyers.useAll();
-  if (q.error) return <ErrorAlert error={q.error} />;
-  if (q.isPending) return <Loading label="Loading buyers…" />;
-  const rows = q.data ?? [];
+  const fields: FieldSpec<Buyer>[] = [
+    { key: "Name", label: t("col.name"), type: "text", required: true, unique: true },
+    { key: "Country", label: t("col.country"), type: "text", required: true },
+    { key: "ContactEmail", label: t("col.contact"), type: "text", required: true },
+    { key: "PreferredLanguage", label: t("col.reportLanguage"), type: "text" },
+    { key: "IsActive", label: t("col.status"), type: "boolean" },
+  ];
   return (
     <>
-      <PageHead
-        title={t("nav.buyers")}
-        description={t("page.buyers.desc")}
+      <PageHead title={t("nav.buyers")} description={t("page.buyers.desc")} />
+      <MasterTable
+        crud={buyers} fields={fields}
+        entity="buyer" entityPlural="buyers"
+        sortBy={(a, b) => a.Name.localeCompare(b.Name)}
       />
-      <div className="grid one">
-        <Card title={t("page.buyers.card")} sub={t("page.buyers.cardSub")}>
-          {rows.length === 0 ? <Empty title="No buyers" /> : (
-            <TableWrap>
-              <thead><tr><th>{t("col.name")}</th><th>{t("col.country")}</th><th>{t("col.contact")}</th><th>{t("col.reportLanguage")}</th></tr></thead>
-              <tbody>
-                {rows.map((b) => (
-                  <tr key={b.ItemId}>
-                    <td><strong>{b.Name}</strong></td>
-                    <td>{b.Country}</td>
-                    <td>{b.ContactEmail}</td>
-                    <td>{b.PreferredLanguage}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </TableWrap>
-          )}
-        </Card>
-      </div>
     </>
   );
 }
 
 export function StylesPage() {
-  const locale = useI18nStore((s) => s.locale);
   const t = useT();
-  const q = stylesCrud.useAll();
-  const b = buyers.useAll();
-  if (q.error) return <ErrorAlert error={q.error} />;
-  if (q.isPending) return <Loading label="Loading styles…" />;
-  const buyerName = new Map((b.data ?? []).map((x) => [x.ItemId, x.Name]));
-  const rows = q.data ?? [];
+  const buyerList = buyers.useAll();
+  const buyerOptions = useMemo(
+    () => (buyerList.data ?? []).map((b) => ({ id: b.ItemId, label: b.Name })),
+    [buyerList.data],
+  );
+  const fields: FieldSpec<Style>[] = [
+    /* The code is how every other register names this style; changing it after
+     * issues exist detaches them in the reader's mind, so it locks on edit. */
+    { key: "StyleCode", label: t("col.code"), type: "text", required: true, unique: true, lockedOnEdit: true },
+    { key: "Name", label: t("col.name"), type: "text", required: true },
+    { key: "BuyerId", label: t("col.buyer"), type: "ref", required: true, options: buyerOptions },
+    { key: "Season", label: t("col.season"), type: "text" },
+    { key: "OrderQty", label: t("col.orderQty"), type: "number" },
+    { key: "ShipDate", label: t("col.shipDate"), type: "text", placeholder: "2026-11-01" },
+    { key: "IsActive", label: t("col.status"), type: "boolean" },
+  ];
   return (
     <>
-      <PageHead
-        title={t("nav.styles")}
-        description={t("page.styles.desc")}
+      <PageHead title={t("nav.styles")} description={t("page.styles.desc")} />
+      <MasterTable
+        crud={stylesCrud} fields={fields}
+        entity="style" entityPlural="styles"
+        sortBy={(a, b) => a.StyleCode.localeCompare(b.StyleCode)}
       />
-      <div className="grid one">
-        <Card title={t("page.styles.card")} sub={t("page.styles.cardSub")}>
-          {rows.length === 0 ? <Empty title="No styles" /> : (
-            <TableWrap>
-              <thead>
-                <tr><th>{t("col.code")}</th><th>{t("col.name")}</th><th>{t("col.buyer")}</th><th>{t("col.season")}</th><th>{t("col.orderQty")}</th><th>{t("col.shipDate")}</th></tr>
-              </thead>
-              <tbody>
-                {rows.map((s) => (
-                  <tr key={s.ItemId}>
-                    <td><strong>{s.StyleCode}</strong></td>
-                    <td>{s.Name}</td>
-                    <td>{buyerName.get(s.BuyerId) ?? "—"}</td>
-                    <td>{s.Season}</td>
-                    <td>{s.OrderQty?.toLocaleString() ?? "—"}</td>
-                    <td>{s.ShipDate ? formatDate(s.ShipDate, locale) : "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </TableWrap>
-          )}
-        </Card>
-      </div>
     </>
   );
 }
 
 export function LinesPage() {
   const t = useT();
-  const q = linesCrud.useAll();
-  if (q.error) return <ErrorAlert error={q.error} />;
-  if (q.isPending) return <Loading label="Loading lines…" />;
-  const rows = q.data ?? [];
+  const fields: FieldSpec<Line>[] = [
+    { key: "Name", label: t("col.line"), type: "text", required: true, unique: true },
+    { key: "PlantId", label: t("col.plant"), type: "text", required: true },
+    { key: "SupervisorId", label: t("col.owner"), type: "text" },
+    { key: "WorkerCount", label: t("col.workers"), type: "number" },
+    { key: "IsActive", label: t("col.status"), type: "boolean" },
+  ];
   return (
     <>
-      <PageHead
-        title={t("nav.lines")}
-        description={t("page.lines.desc")}
+      <PageHead title={t("nav.lines")} description={t("page.lines.desc")} />
+      <MasterTable
+        crud={linesCrud} fields={fields}
+        entity="line" entityPlural="lines"
+        sortBy={(a, b) => a.Name.localeCompare(b.Name)}
       />
-      <div className="grid one">
-        <Card title={t("page.lines.card")} sub={t("page.lines.cardSub")}>
-          {rows.length === 0 ? <Empty title="No lines" /> : (
-            <TableWrap>
-              <thead><tr><th>{t("col.line")}</th><th>{t("col.plant")}</th><th>{t("col.workers")}</th></tr></thead>
-              <tbody>
-                {rows.map((l) => (
-                  <tr key={l.ItemId}>
-                    <td><strong>{l.Name}</strong></td>
-                    <td>{l.PlantId}</td>
-                    <td>{l.WorkerCount?.toLocaleString() ?? "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </TableWrap>
-          )}
-        </Card>
-      </div>
     </>
   );
 }

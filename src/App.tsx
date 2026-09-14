@@ -20,6 +20,7 @@ import {
 import { DashboardPage } from "@/pages/dashboard";
 import { IssuesPage } from "@/pages/issues";
 import { IssueDetailPage } from "@/pages/issue-detail";
+import { RaiseIssuePage } from "@/pages/raise-issue";
 import { SamplesPage } from "@/pages/samples";
 import { StyleSamplesPage } from "@/pages/style-samples";
 import { BuyersPage, LinesPage, StylesPage } from "@/pages/master-data";
@@ -88,6 +89,9 @@ export default function App() {
             <Route index element={<Navigate to="/issues" replace />} />
 
             <Route path="/issues" element={<IssuesPage />} />
+            {/* Static segment before the :id pattern — /issues/new must not resolve
+                as an issue id. Router v6 ranks it correctly regardless of order. */}
+            <Route path="/issues/new" element={<RaiseIssuePage />} />
             <Route path="/issues/:id" element={<IssueDetailPage />} />
 
             {/* Sample versions and the decision of record. A supervisor may look; the

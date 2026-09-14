@@ -56,20 +56,32 @@ console.log(`styles: ${Object.keys(styles).length}`);
 
 /* -------------------------------------------------------- sample versions */
 // ST-2451 has walked proto -> fit -> PP. PP v1 and v2 were rejected; v3 is the
-// one on the table tonight.
+// one on the table tonight. The other styles carry shorter histories so the
+// samples register reads like a factory, not a single-style demo.
 const ST = styles['ST-2451'];
 const sv = {};
 const svDefs = [
-  { Type: 'Proto', VersionNo: 1, Status: 'Approved',  SubmittedAt: days(48), Notes: 'Proto accepted with minor comments.' },
-  { Type: 'Fit',   VersionNo: 1, Status: 'Rejected',  SubmittedAt: days(40), Notes: 'Armhole too tight.' },
-  { Type: 'Fit',   VersionNo: 2, Status: 'Approved',  SubmittedAt: days(33), Notes: 'Fit signed off.' },
-  { Type: 'PP',    VersionNo: 1, Status: 'Rejected',  SubmittedAt: days(21), Notes: 'Collar tipping shading.' },
-  { Type: 'PP',    VersionNo: 2, Status: 'Rejected',  SubmittedAt: days(12), Notes: 'CB length still short.' },
-  { Type: 'PP',    VersionNo: 3, Status: 'Submitted', SubmittedAt: days(2),  Notes: 'Awaiting buyer decision.' },
+  // ST-2451 — the demo style.
+  { key: 'Proto1', Style: 'ST-2451', Type: 'Proto', VersionNo: 1, Status: 'Approved',  SubmittedAt: days(48), Notes: 'Proto accepted with minor comments.' },
+  { key: 'Fit1',   Style: 'ST-2451', Type: 'Fit',   VersionNo: 1, Status: 'Rejected',  SubmittedAt: days(40), Notes: 'Armhole too tight.' },
+  { key: 'Fit2',   Style: 'ST-2451', Type: 'Fit',   VersionNo: 2, Status: 'Approved',  SubmittedAt: days(33), Notes: 'Fit signed off.' },
+  { key: 'PP1',    Style: 'ST-2451', Type: 'PP',    VersionNo: 1, Status: 'Rejected',  SubmittedAt: days(21), Notes: 'Collar tipping shading.' },
+  { key: 'PP2',    Style: 'ST-2451', Type: 'PP',    VersionNo: 2, Status: 'Rejected',  SubmittedAt: days(12), Notes: 'CB length still short.' },
+  { key: 'PP3',    Style: 'ST-2451', Type: 'PP',    VersionNo: 3, Status: 'Submitted', SubmittedAt: days(2),  Notes: 'Awaiting buyer decision.' },
+  // The rest of the order book, at various gates.
+  { key: '2460Fit1', Style: 'ST-2460', Type: 'Fit', VersionNo: 1, Status: 'Approved',  SubmittedAt: days(20), Notes: 'Fit signed off first pass.' },
+  { key: '2460PP1',  Style: 'ST-2460', Type: 'PP',  VersionNo: 1, Status: 'Submitted', SubmittedAt: days(3),  Notes: 'PP on the table.' },
+  { key: '2477P1',   Style: 'ST-2477', Type: 'Proto', VersionNo: 1, Status: 'Rejected', SubmittedAt: days(25), Notes: 'Rib quality not acceptable.' },
+  { key: '2477P2',   Style: 'ST-2477', Type: 'Proto', VersionNo: 2, Status: 'Approved', SubmittedAt: days(15), Notes: 'Approved after rib change.' },
+  { key: '2482Fit1', Style: 'ST-2482', Type: 'Fit', VersionNo: 1, Status: 'Approved',  SubmittedAt: days(10), Notes: 'Approved.' },
+  { key: '2490PP1',  Style: 'ST-2490', Type: 'PP',  VersionNo: 1, Status: 'Rejected',  SubmittedAt: days(6),  Notes: 'Hem uneven.' },
+  { key: '2490PP2',  Style: 'ST-2490', Type: 'PP',  VersionNo: 2, Status: 'Submitted', SubmittedAt: days(1),  Notes: 'Resubmitted after hem correction.' },
 ];
 for (const d of svDefs) {
-  const key = `${d.Type}${d.VersionNo}`;
-  sv[key] = await db.insert('SampleVersion', { ...d, StyleId: ST, EvidenceFileIds: [] });
+  sv[d.key] = await db.insert('SampleVersion', {
+    Type: d.Type, VersionNo: d.VersionNo, Status: d.Status, SubmittedAt: d.SubmittedAt,
+    Notes: d.Notes, StyleId: styles[d.Style], EvidenceFileIds: [],
+  });
 }
 console.log(`sample versions: ${Object.keys(sv).length}`);
 
@@ -80,40 +92,94 @@ const approvals = [
   { k: 'Fit2',   Decision: 'Approved', Actor: 'nusrat', Name: 'Nusrat Jahan', at: days(31), Note: 'Fit approved by buyer.' },
   { k: 'PP1',    Decision: 'Rejected', Actor: 'nusrat', Name: 'Nusrat Jahan', at: days(19), Note: 'Collar tipping shows shading.' },
   { k: 'PP2',    Decision: 'Rejected', Actor: 'nusrat', Name: 'Nusrat Jahan', at: days(10), Note: 'CB length 1cm short.' },
+  { k: '2460Fit1', Decision: 'Approved', Actor: 'nusrat', Name: 'Nusrat Jahan', at: days(18), Note: 'Fit approved.' },
+  { k: '2477P1',   Decision: 'Rejected', Actor: 'shirin', Name: 'Shirin Akter', at: days(23), Note: 'Rib quality poor.' },
+  { k: '2477P2',   Decision: 'Approved', Actor: 'shirin', Name: 'Shirin Akter', at: days(13), Note: 'Rib changed, approved.' },
+  { k: '2482Fit1', Decision: 'Approved', Actor: 'shirin', Name: 'Shirin Akter', at: days(8), Note: 'Approved.' },
+  { k: '2490PP1',  Decision: 'Rejected', Actor: 'shirin', Name: 'Shirin Akter', at: days(4), Note: 'Hem uneven; resubmit.' },
 ];
 await db.insertMany('ApprovalRecord', approvals.map(a => ({
-  SampleVersionId: sv[a.k], StyleId: ST, Decision: a.Decision,
-  ActorId: a.Actor, ActorName: a.Name, DecidedAt: a.at, Note: a.Note,
+  SampleVersionId: sv[a.k], StyleId: styles[svDefs.find(d => d.key === a.k).Style],
+  Decision: a.Decision, ActorId: a.Actor, ActorName: a.Name, DecidedAt: a.at, Note: a.Note,
 })));
 console.log(`approval records: ${approvals.length}`);
 
 /* ---------------------------------------------------------------- issues */
-// The two that matter: shade variation on line 4, days -8 and -3.
+// The two that matter: shade variation on line 4, days -8 and -3. The rest are
+// spread across buyers, lines and types over the trailing month, so the GM's
+// view has a real distribution to rank instead of one story.
+const NORDIC = buyers['Nordic Retail AB'], RUE = buyers['Rue Belmont'], HAFEN = buyers['Hafen Mode GmbH'];
 const issueDefs = [
   { Title: 'Shade variation, front panel', Type: 'Shade', Severity: 'High', Status: 'Closed',
     Line: 'Line 4', Dept: 'Dyeing', raised: days(8), owner: 'rafiqul', ownerName: 'Rafiqul Islam',
+    Style: 'ST-2451', Buyer: NORDIC,
     Desc: 'Front panel shade off against approved swatch on roll 14.' },
   { Title: 'Shade variation, sleeve panel', Type: 'Shade', Severity: 'High', Status: 'Verified',
     Line: 'Line 4', Dept: 'Dyeing', raised: days(3), owner: 'rafiqul', ownerName: 'Rafiqul Islam',
+    Style: 'ST-2451', Buyer: NORDIC,
     Desc: 'Sleeve panels darker than body on lot B, same supplier dye lot.' },
-  { Title: 'Broken stitch at side seam', Type: 'Stitch', Severity: 'Medium', Status: 'Closed',
-    Line: 'Line 2', Dept: 'Sewing', raised: days(6), owner: 'sup-2', ownerName: 'Line 2 Supervisor',
-    Desc: 'Skipped stitches on side seam, 40 pieces.' },
   { Title: 'CB length out of tolerance', Type: 'Measurement', Severity: 'Critical', Status: 'CorrectionUnderWay',
     Line: 'Line 1', Dept: 'Pattern', raised: days(4), owner: 'sup-1', ownerName: 'Line 1 Supervisor',
+    Style: 'ST-2451', Buyer: NORDIC,
     Desc: 'Centre back length 1cm below spec across size M.' },
-  { Title: 'Trim colour mismatch', Type: 'Trim', Severity: 'Low', Status: 'Closed',
-    Line: 'Line 6', Dept: 'Finishing', raised: days(9), owner: 'sup-6', ownerName: 'Line 6 Supervisor',
-    Desc: 'Zipper tape slightly off tone.' },
+  { Title: 'Broken stitch at side seam', Type: 'Stitch', Severity: 'Medium', Status: 'Closed',
+    Line: 'Line 2', Dept: 'Sewing', raised: days(6), owner: 'sup-2', ownerName: 'Line 2 Supervisor',
+    Style: 'ST-2460', Buyer: NORDIC,
+    Desc: 'Skipped stitches on side seam, 40 pieces.' },
+  { Title: 'Fabric hole on roll 3', Type: 'Other', Severity: 'High', Status: 'Verified',
+    Line: 'Line 1', Dept: 'Cutting', raised: days(13), owner: 'sup-1', ownerName: 'Line 1 Supervisor',
+    Style: 'ST-2460', Buyer: NORDIC,
+    Desc: 'Hole detected at spreading; roll quarantined.' },
+  { Title: 'Shade batch difference, body lots', Type: 'Shade', Severity: 'Medium', Status: 'Closed',
+    Line: 'Line 6', Dept: 'Dyeing', raised: days(18), owner: 'sup-6', ownerName: 'Line 6 Supervisor',
+    Style: 'ST-2460', Buyer: NORDIC,
+    Desc: 'Two dye lots one shade apart; shade card tightened.' },
+  { Title: 'Press mark on collar', Type: 'Finishing', Severity: 'Low', Status: 'Closed',
+    Line: 'Line 8', Dept: 'Finishing', raised: days(27), owner: 'sup-8', ownerName: 'Line 8 Supervisor',
+    Style: 'ST-2460', Buyer: NORDIC,
+    Desc: 'Press marking visible on dark collars.' },
   { Title: 'Neck rib wavy after wash', Type: 'Finishing', Severity: 'Medium', Status: 'Reviewed',
     Line: 'Line 3', Dept: 'Finishing', raised: days(2), owner: 'sup-3', ownerName: 'Line 3 Supervisor',
+    Style: 'ST-2477', Buyer: RUE,
     Desc: 'Neck rib waving on washed samples.' },
+  { Title: 'Sleeve length variation', Type: 'Measurement', Severity: 'High', Status: 'Corrected',
+    Line: 'Line 5', Dept: 'Cutting', raised: days(11), owner: 'sup-5', ownerName: 'Line 5 Supervisor',
+    Style: 'ST-2477', Buyer: RUE,
+    Desc: 'Sleeve cuts 0.5cm short after relaxation; marker revised.' },
+  { Title: 'Sleeve cuff twill curling', Type: 'Finishing', Severity: 'Low', Status: 'Verified',
+    Line: 'Line 2', Dept: 'Finishing', raised: days(9), owner: 'sup-2', ownerName: 'Line 2 Supervisor',
+    Style: 'ST-2477', Buyer: RUE,
+    Desc: 'Cuff twill curls after pressing.' },
+  { Title: 'Chest tight at armhole', Type: 'Measurement', Severity: 'High', Status: 'Corrected',
+    Line: 'Line 3', Dept: 'Pattern', raised: days(7), owner: 'sup-3', ownerName: 'Line 3 Supervisor',
+    Style: 'ST-2490', Buyer: RUE,
+    Desc: 'Chest 1.5cm under spec; pattern adjusted.' },
+  { Title: 'Label placement off', Type: 'Trim', Severity: 'Low', Status: 'Closed',
+    Line: 'Line 8', Dept: 'Finishing', raised: days(20), owner: 'sup-8', ownerName: 'Line 8 Supervisor',
+    Style: 'ST-2490', Buyer: RUE,
+    Desc: 'Care label 1cm low on 200 pieces.' },
+  { Title: 'Needle break contamination check', Type: 'Other', Severity: 'Critical', Status: 'Closed',
+    Line: 'Line 7', Dept: 'Sewing', raised: days(15), owner: 'sup-7', ownerName: 'Line 7 Supervisor',
+    Style: 'ST-2482', Buyer: HAFEN,
+    Desc: 'Needle break at station 4; pieces through metal detector.' },
+  { Title: 'Overlock width uneven', Type: 'Stitch', Severity: 'Medium', Status: 'Closed',
+    Line: 'Line 7', Dept: 'Sewing', raised: days(23), owner: 'sup-7', ownerName: 'Line 7 Supervisor',
+    Style: 'ST-2482', Buyer: HAFEN,
+    Desc: 'Overlock seam width varies beyond tolerance.' },
+  { Title: 'Drawcord tip fraying', Type: 'Trim', Severity: 'Medium', Status: 'Reviewed',
+    Line: 'Line 5', Dept: 'Finishing', raised: days(5), owner: 'sup-5', ownerName: 'Line 5 Supervisor',
+    Style: 'ST-2482', Buyer: HAFEN,
+    Desc: 'Cord tips fray after tip machine; plastic tips ordered.' },
+  { Title: 'Zipper tape colour mismatch', Type: 'Trim', Severity: 'Low', Status: 'Closed',
+    Line: 'Line 6', Dept: 'Finishing', raised: days(9), owner: 'sup-6', ownerName: 'Line 6 Supervisor',
+    Style: 'ST-2482', Buyer: HAFEN,
+    Desc: 'Tape slightly off tone against approved trim card.' },
 ];
 const issueIds = [];
 for (const d of issueDefs) {
   const id = await db.insert('Issue', {
     Title: d.Title, Description: d.Desc, Type: d.Type, Severity: d.Severity, Status: d.Status,
-    StyleId: ST, LineId: lines[d.Line], BuyerId: buyers['Nordic Retail AB'], SampleVersionId: '',
+    StyleId: styles[d.Style], LineId: lines[d.Line], BuyerId: d.Buyer, SampleVersionId: '',
     OwnerId: d.owner, OwnerName: d.ownerName, Department: d.Dept,
     DueDate: ahead(3), RaisedBy: 'qa-01', RaisedByName: 'QA Inspector',
     SourceCommentId: '', ClosedAt: d.Status === 'Closed' ? d.raised : null,
