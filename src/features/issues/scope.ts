@@ -25,7 +25,12 @@ function holds(user: BlocksUser | null | undefined, role: string): boolean {
 
 /** The GM, admin and QA read across the whole floor; QA inspects everything by trade. */
 export function seesEverything(user: BlocksUser | null | undefined): boolean {
-  return holds(user, ROLES.admin) || holds(user, ROLES.gm) || holds(user, ROLES.qa);
+  return (
+    holds(user, ROLES.superadmin) ||
+    holds(user, ROLES.admin) ||
+    holds(user, ROLES.gm) ||
+    holds(user, ROLES.qa)
+  );
 }
 
 export function visibleStyles(user: BlocksUser | null | undefined, styles: Style[]): Style[] {
@@ -47,9 +52,17 @@ export function visibleLines(user: BlocksUser | null | undefined, lines: Line[])
 }
 
 /**
- * An issue is visible when either side of it is: the style you merchandise, or the line
- * you run. A supervisor must see a sampling issue routed to their line even though the
- * style belongs to someone else, which is why this is an OR and not an AND.
+ * An issue is visible when either side of it is yours: the style you merchandise, or
+ * the line you run. A supervisor must see a sampling issue routed to their line even
+ * though the style belongs to someone else, which is why this is a union and not an
+ * intersection.
+ *
+ * Built from the roles the user actually HOLDS, not from visibleStyles/visibleLines.
+ * Those two fall through to "everything" for a role they have no rule for — which is
+ * right when the question is "which styles may I read" and wrong here: a supervisor
+ * got every style, the union let every issue through, and their register was the whole
+ * factory's. A role with no row-level rule still reads the register; a role that has
+ * one is held to it.
  */
 export function visibleIssues(
   user: BlocksUser | null | undefined,
@@ -58,7 +71,21 @@ export function visibleIssues(
   lines: Line[],
 ): Issue[] {
   if (seesEverything(user)) return issues;
-  const styleIds = new Set(visibleStyles(user, styles).map((s) => s.ItemId));
-  const lineIds = new Set(visibleLines(user, lines).map((l) => l.ItemId));
-  return issues.filter((i) => styleIds.has(i.StyleId) || (i.LineId && lineIds.has(i.LineId)));
+  const me = subjectOf(user);
+  const isMerchandiser = holds(user, ROLES.merchandiser);
+  const isSupervisor = holds(user, ROLES.supervisor);
+  if (!isMerchandiser && !isSupervisor) return issues;
+
+  const myStyles = isMerchandiser
+    ? new Set(styles.filter((s) => s.MerchandiserId === me).map((s) => s.ItemId))
+    : null;
+  const myLines = isSupervisor
+    ? new Set(lines.filter((l) => l.SupervisorId === me).map((l) => l.ItemId))
+    : null;
+
+  return issues.filter(
+    (i) =>
+      (myStyles?.has(i.StyleId) ?? false) ||
+      (Boolean(i.LineId) && (myLines?.has(i.LineId) ?? false)),
+  );
 }

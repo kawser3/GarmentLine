@@ -6,8 +6,47 @@
 // that the warning was already waiting before anyone asked for it.
 //
 //   node scripts/04-seed.mjs
-import { session } from './blocks.mjs';
+import fs from 'node:fs';
+import path from 'node:path';
+import { session, ROOT_DIR } from './blocks.mjs';
 import { makeData } from './data.mjs';
+
+/*
+ * Ownership has to be written as the IAM user id, not as a nickname.
+ *
+ * scope.ts decides what a merchandiser sees by comparing Style.MerchandiserId to
+ * the signed-in user's itemId, and what a supervisor sees by comparing
+ * Line.SupervisorId the same way. Seeding the string 'nusrat' therefore matched
+ * nobody: Nusrat signed in and her sample register was empty, while a user with
+ * no merchandiser role fell through the filter and saw all five styles.
+ *
+ * 03-roles-users.mjs writes the real ids to generated/demo-users.json. Read them
+ * here and key by the local alias. Staff who have no sign-in account (Shirin, the
+ * other line supervisors) keep their alias — nothing resolves to them, which is
+ * correct: they own rows but cannot log in to read them.
+ */
+const DEMO_USERS = (() => {
+  const f = path.join(ROOT_DIR, 'generated', 'demo-users.json');
+  if (!fs.existsSync(f)) {
+    console.warn('! generated/demo-users.json not found - run scripts/03-roles-users.mjs first.');
+    console.warn('  Seeding with nicknames; role-scoped views will look empty for demo users.');
+    return {};
+  }
+  const byEmail = {};
+  for (const u of JSON.parse(fs.readFileSync(f, 'utf8')).users ?? []) {
+    if (u.email && u.userId) byEmail[u.email] = u.userId;
+  }
+  return {
+    nusrat:  byEmail['nusrat.garmentline@example.com'],
+    rafiqul: byEmail['rafiqul.garmentline@example.com'],
+    qa:      byEmail['qa.garmentline@example.com'],
+    gm:      byEmail['gm.garmentline@example.com'],
+    owner:   byEmail['owner.garmentline@example.com'],
+  };
+})();
+
+/** The IAM id when the person can sign in, otherwise the alias unchanged. */
+const who = (alias) => DEMO_USERS[alias] ?? alias;
 
 const s = await session();
 const db = makeData(s);
@@ -49,7 +88,7 @@ const LINE_DEFS = [
 const lines = {};
 for (const l of LINE_DEFS) {
   lines[l.Name] = await db.insert('Line', {
-    Name: l.Name, PlantId: l.Plant, SupervisorId: l.Sup, WorkerCount: l.Crew, IsActive: true,
+    Name: l.Name, PlantId: l.Plant, SupervisorId: who(l.Sup), WorkerCount: l.Crew, IsActive: true,
   });
 }
 console.log(`lines: ${Object.keys(lines).length}`);
@@ -57,11 +96,11 @@ console.log(`lines: ${Object.keys(lines).length}`);
 /* ---------------------------------------------------------------- styles */
 const styles = {};
 const styleDefs = [
-  { StyleCode: 'ST-2451', Name: "Men's knit polo",        BuyerId: buyers['Nordic Retail AB'], Season: 'SS26', OrderQty: 12000, ShipDate: ahead(24), MerchandiserId: 'nusrat' },
-  { StyleCode: 'ST-2460', Name: "Men's crew tee",         BuyerId: buyers['Nordic Retail AB'], Season: 'SS26', OrderQty: 18000, ShipDate: ahead(31), MerchandiserId: 'nusrat' },
-  { StyleCode: 'ST-2477', Name: "Women's rib tank",       BuyerId: buyers['Rue Belmont'],      Season: 'SS26', OrderQty:  9000, ShipDate: ahead(18), MerchandiserId: 'nusrat' },
-  { StyleCode: 'ST-2482', Name: "Kids' hooded sweat",     BuyerId: buyers['Hafen Mode GmbH'],  Season: 'AW26', OrderQty: 14000, ShipDate: ahead(45), MerchandiserId: 'shirin' },
-  { StyleCode: 'ST-2490', Name: "Women's polo dress",     BuyerId: buyers['Rue Belmont'],      Season: 'SS26', OrderQty:  6500, ShipDate: ahead(12), MerchandiserId: 'shirin' },
+  { StyleCode: 'ST-2451', Name: "Men's knit polo",        BuyerId: buyers['Nordic Retail AB'], Season: 'SS26', OrderQty: 12000, ShipDate: ahead(24), MerchandiserId: who('nusrat') },
+  { StyleCode: 'ST-2460', Name: "Men's crew tee",         BuyerId: buyers['Nordic Retail AB'], Season: 'SS26', OrderQty: 18000, ShipDate: ahead(31), MerchandiserId: who('nusrat') },
+  { StyleCode: 'ST-2477', Name: "Women's rib tank",       BuyerId: buyers['Rue Belmont'],      Season: 'SS26', OrderQty:  9000, ShipDate: ahead(18), MerchandiserId: who('nusrat') },
+  { StyleCode: 'ST-2482', Name: "Kids' hooded sweat",     BuyerId: buyers['Hafen Mode GmbH'],  Season: 'AW26', OrderQty: 14000, ShipDate: ahead(45), MerchandiserId: who('shirin') },
+  { StyleCode: 'ST-2490', Name: "Women's polo dress",     BuyerId: buyers['Rue Belmont'],      Season: 'SS26', OrderQty:  6500, ShipDate: ahead(12), MerchandiserId: who('shirin') },
 ];
 for (const d of styleDefs) styles[d.StyleCode] = await db.insert('Style', { ...d, IsActive: true });
 console.log(`styles: ${Object.keys(styles).length}`);
@@ -112,7 +151,7 @@ const approvals = [
 ];
 await db.insertMany('ApprovalRecord', approvals.map(a => ({
   SampleVersionId: sv[a.k], StyleId: styles[svDefs.find(d => d.key === a.k).Style],
-  Decision: a.Decision, ActorId: a.Actor, ActorName: a.Name, DecidedAt: a.at, Note: a.Note,
+  Decision: a.Decision, ActorId: who(a.Actor), ActorName: a.Name, DecidedAt: a.at, Note: a.Note,
 })));
 console.log(`approval records: ${approvals.length}`);
 
@@ -259,7 +298,7 @@ for (const d of issueDefs) {
   const id = await db.insert('Issue', {
     Title: d.Title, Description: d.Desc, Type: d.Type, Severity: d.Severity, Status: d.Status,
     StyleId: styles[d.Style], LineId: lines[d.Line], BuyerId: d.Buyer, SampleVersionId: '',
-    OwnerId: d.owner, OwnerName: d.ownerName, Department: d.Dept,
+    OwnerId: who(d.owner), OwnerName: d.ownerName, Department: d.Dept,
     RaisedAt: d.raised, DueDate: ahead(3), RaisedBy: 'qa-01', RaisedByName: 'QA Inspector',
     SourceCommentId: '', ClosedAt: d.Status === 'Closed' ? d.raised : null,
   });
