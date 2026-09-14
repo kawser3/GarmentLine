@@ -239,11 +239,7 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
             </Button>
           </div>
         </div>
-      ) : (
-        <p className="muted">
-          Recording buyer comments and accepting AI proposals is the merchandiser's call.
-        </p>
-      )}
+      ) : null}
 
       {drafts.length > 0 && (
         <div className="stack">

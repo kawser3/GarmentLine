@@ -188,12 +188,7 @@ export function StyleSamplesPage() {
             : <Badge tone="danger">None approved — bulk must not start</Badge>}
         </p>
         {pushNote && <p className="muted">{pushNote}</p>}
-        {!mayApprove && (
-          <p className="muted">
-            Marking a sample approved is a decision of record. Your role can read this
-            history but not add to it.
-          </p>
-        )}
+
       </Card>
 
       <Card span title="Versions and decisions" sub="Every decision is kept; none can be edited or removed.">

@@ -47,6 +47,11 @@ const MASTER_ROLES = [ROLES.superadmin, ROLES.admin, ROLES.gm, ROLES.merchandise
  */
 const PEOPLE_ROLES = [ROLES.superadmin, ROLES.admin, ROLES.gm];
 
+/** Who may open the raise form. Mirrors canRaiseIssue in the auth store. */
+const RAISE_ROLES = [
+  ROLES.superadmin, ROLES.admin, ROLES.gm, ROLES.merchandiser, ROLES.supervisor, ROLES.qa,
+];
+
 export default function App() {
   useSessionBootstrap();
   /*
@@ -90,8 +95,19 @@ export default function App() {
 
             <Route path="/issues" element={<IssuesPage />} />
             {/* Static segment before the :id pattern — /issues/new must not resolve
-                as an issue id. Router v6 ranks it correctly regardless of order. */}
-            <Route path="/issues/new" element={<RaiseIssuePage />} />
+                as an issue id. Router v6 ranks it correctly regardless of order.
+
+                Guarded: the register lists for everyone, but a role that cannot
+                raise should meet the standard no-access page, not a form with
+                every control greyed out. */}
+            <Route
+              path="/issues/new"
+              element={
+                <RequireRole any={RAISE_ROLES}>
+                  <RaiseIssuePage />
+                </RequireRole>
+              }
+            />
             <Route path="/issues/:id" element={<IssueDetailPage />} />
 
             {/* Sample versions and the decision of record. A supervisor may look; the

@@ -8,7 +8,7 @@ import {
 } from "@/features/data/garment-schemas";
 import { issueEvent } from "@/features/issues/history";
 import {
-  canCloseIssue, canRecordCorrection, canVerifyIssue, useAuthStore,
+  canCloseIssue, canEditIssue, canRecordCorrection, canVerifyIssue, useAuthStore,
 } from "@/stores/auth";
 import { useI18nStore, useT } from "@/features/i18n/i18n";
 import { formatDate, formatClock } from "@/lib/format";
@@ -65,6 +65,7 @@ export function IssueDetailPage() {
   const line = (lines.data ?? []).find((l) => l.ItemId === issue.LineId);
   const buyer = (buyerList.data ?? []).find((b) => b.ItemId === issue.BuyerId);
   const nexts = NEXT_STATUS[issue.Status].filter((n) => mayMove(n, user));
+  const mayWrite = canEditIssue(user) || nexts.length > 0;
 
   async function move() {
     if (!target || !issue) return;
@@ -154,36 +155,47 @@ export function IssueDetailPage() {
           </ol>
         )}
 
-        <Field label={t("detail.addToHistory")}>
-          <textarea
-            className="input"
-            rows={3}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder={t("detail.addPlaceholder")}
-          />
-        </Field>
+        {/*
+          The composer belongs to whoever can act on an issue. It was rendered for
+          every signed-in role, including one that may only read — an editable box
+          and a live Add button, on an append-only register. A reader now gets the
+          history and nothing that invites them to write to it.
+        */}
+        {mayWrite && (
+          <>
+            <Field label={t("detail.addToHistory")}>
+              <textarea
+                className="input"
+                rows={3}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder={t("detail.addPlaceholder")}
+              />
+            </Field>
 
-        <div className="row-actions">
-          <Button onClick={comment} disabled={busy || !note.trim()}>{t("detail.addComment")}</Button>
-          {nexts.length > 0 ? (
-            <>
-              <Select value={target} onChange={(e) => setTarget(e.target.value as Status)}>
-                <option value="">{t("detail.moveTo")}</option>
-                {nexts.map((n) => <option key={n} value={n}>{STATUS_LABEL[n]}</option>)}
-              </Select>
-              <Button variant="primary" onClick={move} disabled={busy || !target}>
-                {t("detail.recordChange")}
-              </Button>
-            </>
-          ) : (
-            <span className="muted">
-              {NEXT_STATUS[issue.Status].length === 0
-                ? t("detail.settled")
-                : t("detail.roleCannotMove")}
-            </span>
-          )}
-        </div>
+            <div className="row-actions">
+              <Button onClick={comment} disabled={busy || !note.trim()}>{t("detail.addComment")}</Button>
+              {nexts.length > 0 ? (
+                <>
+                  <Select value={target} onChange={(e) => setTarget(e.target.value as Status)}>
+                    <option value="">{t("detail.moveTo")}</option>
+                    {nexts.map((n) => <option key={n} value={n}>{STATUS_LABEL[n]}</option>)}
+                  </Select>
+                  <Button variant="primary" onClick={move} disabled={busy || !target}>
+                    {t("detail.recordChange")}
+                  </Button>
+                </>
+              ) : (
+                /* Settled is worth saying — the issue is done, not withheld. A
+                   transition this role simply may not make is not: the control
+                   is absent, which is the same answer without the lecture. */
+                NEXT_STATUS[issue.Status].length === 0 && (
+                  <span className="muted">{t("detail.settled")}</span>
+                )
+              )}
+            </div>
+          </>
+        )}
       </Card>
     </div>
   );
