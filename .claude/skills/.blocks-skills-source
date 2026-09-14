@@ -1,0 +1,4 @@
+Vendored 2026-09-14T11:41:58Z
+skills content: SELISEdigitalplatforms/blocks-cli @ 218d40241b479fa23b3b1d5cae556d66fc266e1d  (path: blocks-skills/)
+routing rules:  SELISEdigitalplatforms/blocks-skills @ 50e06737a4834db375b36c95075421ad3c08be39
+skills: blocks-bootstrap blocks-captcha blocks-data-gateway-configuration blocks-data-gateway-crud blocks-data-storage blocks-frontend-local-https blocks-iam-access-control blocks-iam-account blocks-iam-mfa blocks-iam-organizations blocks-iam-sso-oidc-configuration blocks-iam-sso-oidc-implementation blocks-iam-users blocks-localization-configuration blocks-localization-implementation blocks-mail blocks-notification blocks-notifier blocks-release-deployment blocks-secrets blocks-storage-configuration 

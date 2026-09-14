@@ -1,0 +1,21 @@
+# Never ship credentials or local machine state into the image.
+.env
+.env.local
+.env.*.local
+.cert/
+scripts/blocks/ctx*.env
+scripts/blocks/sso.env
+
+node_modules/
+dist/
+*.tsbuildinfo
+
+.git/
+.github/
+.claude/
+__pycache__/
+*.pyc
+
+README.md
+*.md
+!package.json

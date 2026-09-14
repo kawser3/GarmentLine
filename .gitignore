@@ -1,0 +1,24 @@
+# Secrets — never commit. The repo is public.
+.env
+.env.local
+.env.docker
+scripts/blocks/ctx*.env
+scripts/blocks/sso.env
+
+# Provisioning output that can carry a live IAM client secret
+generated/*secret*
+generated/oidc-*.json
+
+# Case brief (organizer material, not our work product)
+01-GarmentLine.pdf
+
+# Build + deps
+node_modules/
+dist/
+*.tsbuildinfo
+.vite/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/

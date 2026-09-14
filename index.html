@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Inter for the interface, JetBrains Mono for figures: a dashboard read
+         under pressure needs its numbers to line up in columns. -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet" />
+    <meta charset="UTF-8" />
+    <!-- Generated from the supplied logo by scripts/make-logo.mjs: the cube glyph alone,
+         white on SELISE blue. The wordmark is illegible at 16px and a transparent icon
+         vanishes against a dark browser chrome, so this one is composited, not masked. -->
+    <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <meta name="theme-color" content="#0066b2" />
+    <!-- viewport-fit=cover is required for env(safe-area-inset-*) to report anything but 0.
+         It lets the page extend under a notch, which is only safe because the shell pads
+         itself back out by those insets — see the safe-area block in src/index.css. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="Pricing packages and a pay-as-you-go cost estimator for the SELISE Blocks platform."
+    />
+    <title>Blocks Incident Management</title>
+
+    <!--
+      Resolve the theme BEFORE the first paint.
+
+      ThemeProvider does this in an effect, which is too late for the preloader below: it would
+      paint on a light background and then flip, so a dark-theme user gets a white flash on every
+      load. Same storage key and same precedence as components/theme.tsx — an explicit choice
+      wins, otherwise the OS preference. React writes the identical attribute when it mounts.
+    -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("blocks-incident.theme");
+          if (t !== "light" && t !== "dark") {
+            /* Dark-first, matching components/theme.tsx. These two MUST agree:
+               disagree and a dark-default visitor gets a white flash before the
+               bundle executes, which is the whole reason this runs inline. */
+            t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+          }
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {
+          /* Private-browsing modes can throw on read; the dark default is fine. */
+        }
+      })();
+    </script>
+
+    <!--
+      The preloader, styled HERE rather than in src/index.css deliberately.
+
+      In dev, index.css arrives as a JS import, so none of it applies until the bundle has
+      executed — precisely the window this overlay exists to cover. Inline in the head, it is
+      styled by the first paint in every mode, and the React transition overlay reuses the same
+      rules rather than carrying a second copy.
+
+      The mark repeats the wordmark's mask and its 2.5811 aspect ratio from components/logo.tsx
+      instead of reusing `.logo`, for the same reason: `.logo` lives in the stylesheet that has
+      not loaded yet.
+    -->
+    <style>
+      .preload {
+        position: fixed;
+        inset: 0;
+        /* Above the highest layer the app itself uses (80 — the quote bar). */
+        z-index: 120;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+        background: var(--page, #f8fafc);
+        color: var(--fg, #1b2021);
+      }
+
+      [data-theme="dark"] .preload {
+        background: var(--page, #0a0e1a);
+        color: var(--fg, #ffffff);
+      }
+
+      /*
+        The mark assembling itself: the glyph spins up from a slight scale-down
+        while the wordmark fades and prints in beside it, then the glyph settles
+        into its steady nine-second orbit.
+
+        These are real images, not a mask. The artwork carries three brand
+        colours and the three lines ARE the identity — a luminance mask over
+        currentColor would flatten all three into one tint.
+      */
+      .preload-mark {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 52px;
+      }
+      .preload-mark img {
+        display: block;
+        height: 100%;
+        width: auto;
+      }
+      .preload-glyph {
+        transform-origin: 50% 50%;
+        animation:
+          preload-spinup 1100ms cubic-bezier(0.2, 0.7, 0.3, 1) both,
+          swirl 9s linear 1100ms infinite;
+      }
+      .preload-word {
+        animation: preload-print 900ms cubic-bezier(0.3, 0.7, 0.3, 1) 260ms both;
+      }
+
+      @keyframes preload-spinup {
+        from { transform: rotate(-150deg) scale(0.82); opacity: 0; }
+        to   { transform: rotate(0deg) scale(1); opacity: 1; }
+      }
+      @keyframes swirl {
+        to { transform: rotate(360deg); }
+      }
+      /* Prints left to right rather than simply appearing. */
+      @keyframes preload-print {
+        from { clip-path: inset(0 100% 0 0); opacity: 0; }
+        30%  { opacity: 1; }
+        to   { clip-path: inset(0 0 0 0); opacity: 1; }
+      }
+
+      /*
+        No indeterminate bar. The mark assembling itself already says "loading",
+        and a second progress element beneath it says it twice — the first thing
+        anyone sees should not be two things competing to tell them to wait.
+      */
+
+      /* Only the React overlay fades in — the boot one must be on screen at the first paint. */
+      .preload.enter {
+        animation: preload-in 160ms ease both;
+      }
+
+      .preload.leaving {
+        pointer-events: none;
+        animation: preload-out 280ms ease forwards;
+      }
+
+      @keyframes preload-in {
+        from {
+          opacity: 0;
+        }
+      }
+
+      @keyframes preload-out {
+        to {
+          opacity: 0;
+        }
+      }
+
+      /*
+       * Reduced motion removes the ROTATION, not the mark. The logo is complete
+       * and legible standing still — it never needed the movement to be readable.
+       */
+      @media (prefers-reduced-motion: reduce) {
+        .preload.enter,
+        .preload-glyph,
+        .preload-word {
+          animation: none;
+        }
+      }
+
+      @media print {
+        .preload {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!--
+      Shown by the very first paint and removed by components/preloader.tsx once the app has
+      mounted and its first screen has settled. Markup rather than React, because React is what
+      we are waiting for: the bundle is ~450 kB and must be fetched, parsed and executed before
+      it can render anything at all.
+    -->
+    <div class="preload" id="boot-preload" role="status" aria-label="Loading Blocks Incident Management">
+      <span class="preload-mark">
+        <img class="preload-glyph" src="/logo-glyph.png" alt="" width="52" height="52" />
+        <img class="preload-word" src="/logo-wordmark.png" alt="" width="84" height="52" />
+      </span>
+    </div>
+    <!-- Runtime config, written by the container entrypoint. Must load before the app.
+         Absent in local dev (404) — the app falls back to build-time env values. -->
+    <script src="/config.js"></script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

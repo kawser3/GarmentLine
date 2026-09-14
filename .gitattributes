@@ -1,0 +1,10 @@
+# This repo lives on a Windows drive accessed from WSL. Without this, a checkout with
+# autocrlf on gives shell scripts CRLF endings, and bash then fails on the very first line
+# with "pipefail: invalid option name" — an error that names nothing to do with the cause.
+# Anything with a shebang must stay LF regardless of platform.
+*.sh text eol=lf
+*.py text eol=lf
+*.mjs text eol=lf
+
+# Default: normalise in the repo, let git decide on checkout.
+* text=auto

@@ -1,0 +1,343 @@
+{
+  "Buyer": {
+    "collectionName": "sb_Buyers",
+    "querySchema": "Buyers",
+    "query": "getBuyers",
+    "mutations": [
+      "insertBuyer",
+      "insertManyBuyer",
+      "updateBuyer",
+      "updateManyBuyer",
+      "deleteBuyer",
+      "deleteManyBuyer"
+    ],
+    "fields": [
+      "Name:String",
+      "Country:String",
+      "ContactEmail:String",
+      "PreferredLanguage:String",
+      "IsActive:Boolean",
+      "ItemId:String",
+      "CreatedDate:DateTime",
+      "LastUpdatedDate:DateTime",
+      "CreatedBy:String",
+      "Language:String",
+      "LastUpdatedBy:String",
+      "OrganizationId:String",
+      "Tags:String[]"
+    ]
+  },
+  "Style": {
+    "collectionName": "sb_Styles",
+    "querySchema": "Styles",
+    "query": "getStyles",
+    "mutations": [
+      "insertStyle",
+      "insertManyStyle",
+      "updateStyle",
+      "updateManyStyle",
+      "deleteStyle",
+      "deleteManyStyle"
+    ],
+    "fields": [
+      "StyleCode:String",
+      "Name:String",
+      "BuyerId:String",
+      "Season:String",
+      "OrderQty:Int",
+      "ShipDate:DateTime",
+      "MerchandiserId:String",
+      "IsActive:Boolean",
+      "ItemId:String",
+      "CreatedDate:DateTime",
+      "LastUpdatedDate:DateTime",
+      "CreatedBy:String",
+      "Language:String",
+      "LastUpdatedBy:String",
+      "OrganizationId:String",
+      "Tags:String[]"
+    ]
+  },
+  "Line": {
+    "collectionName": "sb_Lines",
+    "querySchema": "Lines",
+    "query": "getLines",
+    "mutations": [
+      "insertLine",
+      "insertManyLine",
+      "updateLine",
+      "updateManyLine",
+      "deleteLine",
+      "deleteManyLine"
+    ],
+    "fields": [
+      "Name:String",
+      "PlantId:String",
+      "SupervisorId:String",
+      "WorkerCount:Int",
+      "IsActive:Boolean",
+      "ItemId:String",
+      "CreatedDate:DateTime",
+      "LastUpdatedDate:DateTime",
+      "CreatedBy:String",
+      "Language:String",
+      "LastUpdatedBy:String",
+      "OrganizationId:String",
+      "Tags:String[]"
+    ]
+  },
+  "SampleVersion": {
+    "collectionName": "sb_SampleVersions",
+    "querySchema": "SampleVersions",
+    "query": "getSampleVersions",
+    "mutations": [
+      "insertSampleVersion",
+      "insertManySampleVersion",
+      "updateSampleVersion",
+      "updateManySampleVersion",
+      "deleteSampleVersion",
+      "deleteManySampleVersion"
+    ],
+    "fields": [
+      "StyleId:String",
+      "Type:String",
+      "VersionNo:Int",
+      "Status:String",
+      "SubmittedAt:DateTime",
+      "EvidenceFileIds:String[]",
+      "Notes:String",
+      "ItemId:String",
+      "CreatedDate:DateTime",
+      "LastUpdatedDate:DateTime",
+      "CreatedBy:String",
+      "Language:String",
+      "LastUpdatedBy:String",
+      "OrganizationId:String",
+      "Tags:String[]"
+    ]
+  },
+  "ApprovalRecord": {
+    "collectionName": "sb_ApprovalRecords",
+    "querySchema": "ApprovalRecords",
+    "query": "getApprovalRecords",
+    "mutations": [
+      "insertApprovalRecord",
+      "insertManyApprovalRecord",
+      "updateApprovalRecord",
+      "updateManyApprovalRecord",
+      "deleteApprovalRecord",
+      "deleteManyApprovalRecord"
+    ],
+    "fields": [
+      "SampleVersionId:String",
+      "StyleId:String",
+      "Decision:String",
+      "ActorId:String",
+      "ActorName:String",
+      "DecidedAt:DateTime",
+      "Note:String",
+      "ItemId:String",
+      "CreatedDate:DateTime",
+      "LastUpdatedDate:DateTime",
+      "CreatedBy:String",
+      "Language:String",
+      "LastUpdatedBy:String",
+      "OrganizationId:String",
+      "Tags:String[]"
+    ]
+  },
+  "Issue": {
+    "collectionName": "sb_Issues",
+    "querySchema": "Issues",
+    "query": "getIssues",
+    "mutations": [
+      "insertIssue",
+      "insertManyIssue",
+      "updateIssue",
+      "updateManyIssue",
+      "deleteIssue",
+      "deleteManyIssue"
+    ],
+    "fields": [
+      "Title:String",
+      "Description:String",
+      "Type:String",
+      "Severity:String",
+      "Status:String",
+      "StyleId:String",
+      "LineId:String",
+      "BuyerId:String",
+      "SampleVersionId:String",
+      "OwnerId:String",
+      "OwnerName:String",
+      "Department:String",
+      "DueDate:DateTime",
+      "RaisedBy:String",
+      "RaisedByName:String",
+      "SourceCommentId:String",
+      "ClosedAt:DateTime",
+      "ItemId:String",
+      "CreatedDate:DateTime",
+      "LastUpdatedDate:DateTime",
+      "CreatedBy:String",
+      "Language:String",
+      "LastUpdatedBy:String",
+      "OrganizationId:String",
+      "Tags:String[]"
+    ]
+  },
+  "IssueEvent": {
+    "collectionName": "sb_IssueEvents",
+    "querySchema": "IssueEvents",
+    "query": "getIssueEvents",
+    "mutations": [
+      "insertIssueEvent",
+      "insertManyIssueEvent",
+      "updateIssueEvent",
+      "updateManyIssueEvent",
+      "deleteIssueEvent",
+      "deleteManyIssueEvent"
+    ],
+    "fields": [
+      "IssueId:String",
+      "Kind:String",
+      "ActorId:String",
+      "ActorName:String",
+      "At:DateTime",
+      "Message:String",
+      "FromStatus:String",
+      "ToStatus:String",
+      "EvidenceFileIds:String[]",
+      "ItemId:String",
+      "CreatedDate:DateTime",
+      "LastUpdatedDate:DateTime",
+      "CreatedBy:String",
+      "Language:String",
+      "LastUpdatedBy:String",
+      "OrganizationId:String",
+      "Tags:String[]"
+    ]
+  },
+  "BuyerComment": {
+    "collectionName": "sb_BuyerComments",
+    "querySchema": "BuyerComments",
+    "query": "getBuyerComments",
+    "mutations": [
+      "insertBuyerComment",
+      "insertManyBuyerComment",
+      "updateBuyerComment",
+      "updateManyBuyerComment",
+      "deleteBuyerComment",
+      "deleteManyBuyerComment"
+    ],
+    "fields": [
+      "StyleId:String",
+      "SampleVersionId:String",
+      "RawText:String",
+      "Channel:String",
+      "ReceivedAt:DateTime",
+      "ParsedAt:DateTime",
+      "ParsedBy:String",
+      "ItemId:String",
+      "CreatedDate:DateTime",
+      "LastUpdatedDate:DateTime",
+      "CreatedBy:String",
+      "Language:String",
+      "LastUpdatedBy:String",
+      "OrganizationId:String",
+      "Tags:String[]"
+    ]
+  },
+  "ActionItem": {
+    "collectionName": "sb_ActionItems",
+    "querySchema": "ActionItems",
+    "query": "getActionItems",
+    "mutations": [
+      "insertActionItem",
+      "insertManyActionItem",
+      "updateActionItem",
+      "updateManyActionItem",
+      "deleteActionItem",
+      "deleteManyActionItem"
+    ],
+    "fields": [
+      "BuyerCommentId:String",
+      "IssueId:String",
+      "What:String",
+      "Part:String",
+      "Department:String",
+      "Urgency:String",
+      "State:String",
+      "Sequence:Int",
+      "AcceptedBy:String",
+      "AcceptedAt:DateTime",
+      "ItemId:String",
+      "CreatedDate:DateTime",
+      "LastUpdatedDate:DateTime",
+      "CreatedBy:String",
+      "Language:String",
+      "LastUpdatedBy:String",
+      "OrganizationId:String",
+      "Tags:String[]"
+    ]
+  },
+  "RepeatAlert": {
+    "collectionName": "sb_RepeatAlerts",
+    "querySchema": "RepeatAlerts",
+    "query": "getRepeatAlerts",
+    "mutations": [
+      "insertRepeatAlert",
+      "insertManyRepeatAlert",
+      "updateRepeatAlert",
+      "updateManyRepeatAlert",
+      "deleteRepeatAlert",
+      "deleteManyRepeatAlert"
+    ],
+    "fields": [
+      "LineId:String",
+      "IssueType:String",
+      "WindowDays:Int",
+      "Occurrences:Int",
+      "DetectedAt:DateTime",
+      "IssueIds:String[]",
+      "Message:String",
+      "Acknowledged:Boolean",
+      "AcknowledgedBy:String",
+      "ItemId:String",
+      "CreatedDate:DateTime",
+      "LastUpdatedDate:DateTime",
+      "CreatedBy:String",
+      "Language:String",
+      "LastUpdatedBy:String",
+      "OrganizationId:String",
+      "Tags:String[]"
+    ]
+  },
+  "CostAssumption": {
+    "collectionName": "sb_CostAssumptions",
+    "querySchema": "CostAssumptions",
+    "query": "getCostAssumptions",
+    "mutations": [
+      "insertCostAssumption",
+      "insertManyCostAssumption",
+      "updateCostAssumption",
+      "updateManyCostAssumption",
+      "deleteCostAssumption",
+      "deleteManyCostAssumption"
+    ],
+    "fields": [
+      "Key:String",
+      "Value:Float",
+      "Unit:String",
+      "Note:String",
+      "ItemId:String",
+      "CreatedDate:DateTime",
+      "LastUpdatedDate:DateTime",
+      "CreatedBy:String",
+      "Language:String",
+      "LastUpdatedBy:String",
+      "OrganizationId:String",
+      "Tags:String[]"
+    ]
+  }
+}

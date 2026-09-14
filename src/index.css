@@ -1,0 +1,6182 @@
+/* ============================================================
+   Blocks Calculator — design system
+
+   The tokens below are the ones seliseblocks.com actually ships, read from its own
+   stylesheet rather than eyeballed: SELISE blue #0066b2, the deep-navy dark surfaces
+   (#001728 / #002847 / #003661), the slate light surfaces (#f1f5f9 / #e2e8f0), Inter,
+   and a 10px radius. This app sits under the same brand, so it uses the same values.
+
+   Two additions the marketing site does not need but an application does:
+     * a third text emphasis level, because dense tables need a quieter tier than
+       "muted" for units and hints;
+     * semantic status colours, since nothing on a marketing page has to say
+       "this line exceeds its limit".
+
+   Sans for everything a person reads. Tabular figures ONLY for numbers, so money and
+   quantity columns align on the decimal.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&display=swap');
+
+:root {
+  /* brand — SELISE blue, unchanged between themes so the identity is constant */
+  --primary: #0066b2;
+  --primary-hover: #00558f;
+  --primary-fg: #ffffff;
+  --primary-soft: #e8f1f9;
+  --primary-border: #a8cbe6;
+
+  /* surfaces */
+  --page: #f8fafc;
+  --card: #ffffff;
+  --card-alt: #f1f5f9;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  /* text — three emphasis levels */
+  --fg: #1b2021;
+  --fg-muted: #475569;
+  --fg-subtle: #7b7c7f;
+
+  /* semantic */
+  --success: #15803d;
+  --success-bg: #f0fdf4;
+  --warning: #b45309;
+  --warning-bg: #fffbeb;
+  --danger: #ef4444;
+  --danger-bg: #fef2f2;
+
+  /*
+   * Severity has its OWN scale, separate from the accent (PLAN §07).
+   *
+   * P3 is the one that would otherwise reach for the brand blue, and a severity that shares
+   * a hue with every button in the interface stops reading as severity — so P3 is a slate,
+   * and the accent is left to mean "action". Encoded in FORM as well as colour at the call
+   * site (a filled chip for P1, an outline for P4) so a P1 reads from the back of a room and
+   * survives a colour-blind viewer.
+   */
+  --sev1-fg: #ffffff;
+  --sev1-bg: #b42318;
+  --sev2-fg: #ffffff;
+  --sev2-bg: #b54708;
+  --sev3-fg: #1e3a5f;
+  --sev3-bg: #d6e4f0;
+  --sev4-fg: #475569;
+  --sev4-bg: #eef1f4;
+
+  /* Accents, matched to the dark set but stepped for a light ground. */
+  --accent-teal: #0d9488;
+  --accent-indigo: #4f46e5;
+  --accent-rose: #e11d48;
+  --accent-amber: #b45309;
+
+  /* seliseblocks.com ships --radius: .625rem */
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow: 0 4px 14px rgba(16, 24, 40, 0.07);
+  --shadow-lg: 0 16px 40px rgba(16, 24, 40, 0.11);
+
+  /*
+   * Shell width. The marketing site caps at its xl breakpoint (80rem); an application
+   * with a catalog beside a working area needs more room than a column of prose, so
+   * the general shell is wider and the calculator wider still — it is a two-pane tool,
+   * and squeezing it into a text measure wastes half the screen.
+   */
+  --shell-max: 1440px;
+  --shell-wide: 1760px;
+  --shell-pad: 28px;
+
+  /*
+   * Device safe areas, surfaced as variables so the rules that consume them read plainly and a
+   * test can simulate a notch by overriding these on :root. They are 0 unless index.html sets
+   * viewport-fit=cover.
+   */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace;
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  /* Brand blue holds its value on the dark navy; only the soft/border tints move. */
+  --primary: #2a8fd8;
+  --primary-hover: #4aa5e6;
+  --primary-fg: #ffffff;
+  --primary-soft: #002847;
+  --primary-border: #00558f;
+
+  --page: #0a0e1a;
+  --card: #121729;
+  --card-alt: #171d33;
+  --border: rgba(148, 163, 184, 0.09);
+  --border-strong: rgba(148, 163, 184, 0.18);
+
+  /* Four emphasis levels, plus a fifth for captions. A dense table needs a step
+     below "muted" or every secondary value competes with the primary one. */
+  --fg: #f1f4fa;
+  --fg-2: #c7cee3;
+  --fg-muted: #9aa6c3;
+  --fg-subtle: #6b7793;
+  --fg-caption: #5c6584;
+  --card-raised: #171d33;
+  --row-line: rgba(148, 163, 184, 0.05);
+
+  --success: #4ade80;
+  --success-bg: rgba(74, 222, 128, 0.1);
+  --warning: #fbbf24;
+  --warning-bg: rgba(251, 191, 36, 0.1);
+  --danger: #fb7185;
+  --danger-bg: rgba(251, 113, 133, 0.1);
+
+  /*
+   * Severity on the midnight ground. The CHIP still carries its literal P-label
+   * everywhere it appears — colour is reinforcement only, because P1-P4 was
+   * measured and fails as a categorical palette (P1 against P2 at ΔE 5.4 under
+   * deuteranopia, and P4 is grey by design so it can never clear a chroma floor).
+   */
+  --sev1-fg: #0a0e1a;
+  --sev1-bg: #fb7185;
+  --sev2-fg: #0a0e1a;
+  --sev2-bg: #fbbf24;
+  --sev3-fg: #0a0e1a;
+  --sev3-bg: #5eead4;
+  --sev4-fg: #c7cee3;
+  --sev4-bg: rgba(148, 163, 184, 0.16);
+
+  /* Accents, from the supplied design. Used for chart series and KPI tiles. */
+  --accent-teal: #5eead4;
+  --accent-indigo: #818cf8;
+  --accent-rose: #fb7185;
+  --accent-amber: #fbbf24;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.6);
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--sans);
+  /* 15px base: this is read by people who are not looking at code all day. */
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--fg);
+  background: var(--page);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Figures only. Everything a person reads stays in the sans. */
+.num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95em;
+}
+
+/* ---------------------------------------------------------------- shell
+
+   LAYOUT CONTRACT — the whole application obeys these four rules, so pages need no
+   width handling of their own:
+
+     1. the sidebar is the ONLY fixed-width element — 232px, or 64px collapsed to icons;
+     2. the content area takes all remaining space (flex: 1) and carries min-width: 0
+        so a wide table can shrink it instead of pushing the page sideways;
+     3. no max-width on content. Card grids use auto-fit, so a 2560px monitor gets more
+        columns rather than a band of empty space on the right;
+     4. the one deliberate width limit is the measure on a paragraph of prose, because a
+        2000px-wide line of text is genuinely unreadable. Everything else is fluid.
+
+   Horizontal scrolling exists in exactly two places: a data table wider than its column
+   (.table-wrap) and a chart with more periods than fit (both scroll inside themselves,
+   never the page).
+   ---------------------------------------------------------------- */
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  /* Prevents a wide table from making the whole page scroll sideways. */
+  align-items: stretch;
+}
+
+.sidebar {
+  /* The only fixed-width element in the application. */
+  width: 232px;
+  flex: 0 0 232px;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition:
+    width 0.16s ease,
+    flex-basis 0.16s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none;
+  }
+}
+
+.sidebar-brand {
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.brand-text {
+  min-width: 0;
+  flex: 1;
+}
+.brand-text .name,
+.brand-text .sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar-toggle {
+  flex-shrink: 0;
+}
+.sidebar-brand .name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+}
+.sidebar-brand .sub {
+  font-size: 12px;
+  color: var(--fg-subtle);
+  margin-top: 1px;
+}
+
+.nav-group {
+  padding: 14px 10px 4px;
+}
+.nav-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  padding: 0 8px 6px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--fg-muted);
+  text-decoration: none;
+  margin-bottom: 1px;
+}
+.nav-item:hover {
+  background: var(--card-alt);
+  color: var(--fg);
+  text-decoration: none;
+}
+.nav-item.active {
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 600;
+}
+.nav-item.active:hover {
+  text-decoration: none;
+}
+
+.sidebar-foot {
+  margin-top: auto;
+  /* Equal on all sides; the row inside carries its own padding. */
+  padding: 10px;
+  border-top: 1px solid var(--border);
+}
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /*
+   * One surface, so the avatar, the name and the sign-out button read as a single footer
+   * control. `.user-meta { flex: 1 }` is needed so a long name can ellipsis, but it also pushes
+   * the button to the far edge — with nothing tying them together the three pieces looked like
+   * unrelated items that happened to share a row.
+   */
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--card-alt);
+}
+/* Never squashed by a long name, and centred on the same axis as the avatar. */
+.user-row > .icon-btn {
+  flex-shrink: 0;
+  align-self: center;
+}
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--primary-soft);
+  color: var(--primary);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.user-meta {
+  min-width: 0;
+  flex: 1;
+}
+.user-name {
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.user-role {
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+
+/* ------------------------------------------------- collapsed sidebar
+
+   Icons only, at a width that still gives a 40px hit target. Nothing else in the shell
+   changes: the content area is flex: 1, so it simply takes the 168px back. */
+
+.sidebar.collapsed {
+  width: 64px;
+  flex: 0 0 64px;
+}
+.sidebar.collapsed .sidebar-brand {
+  padding: 18px 0 14px;
+  justify-content: center;
+}
+.sidebar.collapsed .brand-text,
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .nav-group-label,
+.sidebar.collapsed .user-meta {
+  display: none;
+}
+.sidebar.collapsed .nav-group {
+  padding: 10px 12px 2px;
+}
+/* A hairline instead of the group label, so the grouping survives losing its heading. */
+.sidebar.collapsed .nav-group + .nav-group {
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+  padding-top: 10px;
+}
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 10px 0;
+  gap: 0;
+}
+.sidebar.collapsed .sidebar-foot {
+  padding: 12px 0;
+}
+.sidebar.collapsed .user-row {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.main {
+  flex: 1 1 auto;
+  /* min-width: 0 is what actually lets this shrink below its content's intrinsic width;
+     without it a wide table forces the flex item wider and the page scrolls. */
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.content {
+  /* No max-width: content fills the viewport. Padding scales a little on very large
+     screens so the edges do not feel tight, which is the spacing-not-width approach. */
+  padding: 24px;
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+}
+
+@media (min-width: 1600px) {
+  .content,
+  .topbar {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+/* ------------------------------------------------------------ mobile shell
+
+   Below 860px the sidebar stops being a column and becomes an off-canvas drawer.
+
+   It previously turned into a horizontal bar of wrapped nav chips. That technically fitted,
+   but 14 navigation items ahead of the content meant a phone opened on a screenful of menu
+   with the actual page below the fold. A drawer puts content first and the menu one tap away,
+   which is the right trade for an app people check a figure in.
+   ---------------------------------------------------------------- */
+
+.nav-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(16, 24, 40, 0.5);
+}
+/*
+ * Belt and braces with the resize handler in layout.tsx: if the drawer is open when the
+ * viewport grows past the breakpoint, a backdrop left behind would cover the entire desktop UI
+ * and swallow every click. CSS alone cannot unlock body scroll, hence both.
+ */
+@media (min-width: 861px) {
+  .nav-backdrop {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  /*
+   * Off-canvas: translated out of view rather than `display: none`, so opening it animates and
+   * the links stay in the accessibility tree in document order.
+   */
+  .sidebar,
+  .sidebar.collapsed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 50;
+    width: min(280px, 84vw);
+    flex: 0 0 auto;
+    /*
+     * Height, not `bottom: 0`. On Chrome for Android the layout viewport extends beneath the
+     * dynamic toolbar, so `bottom: 0` puts the drawer's last rows — the user row and its sign
+     * out button — below the visible area, where they cannot be scrolled to. `dvh` tracks the
+     * viewport that is actually on screen. The vh line is the fallback for anything without dvh.
+     */
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    /* Scrolling the drawer must not chain to the page behind it. */
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    border-right: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    transform: translateX(-100%);
+    transition: transform 0.18s ease;
+  }
+  .sidebar.open,
+  .sidebar.collapsed.open {
+    transform: translateX(0);
+  }
+
+  /*
+   * Pin the user row to the bottom of the drawer so sign-out is always on screen. Reachable
+   * only after scrolling past fourteen nav items is technically reachable and practically
+   * missable — which is exactly how it was reported. The nav scrolls underneath it, so the
+   * background has to be opaque.
+   */
+  .sidebar-foot {
+    position: sticky;
+    bottom: 0;
+    margin-top: auto;
+    background: var(--card);
+  }
+
+  /*
+   * No `.sidebar.collapsed` overrides here any more. The class is gated to wide viewports in
+   * layout.tsx, so it never reaches the drawer. Neutralising its rules one at a time is what
+   * let `.sidebar.collapsed .sidebar-foot { padding: 12px 0 }` slip through and clip the
+   * sign-out button — the list was six rules long and missing the seventh.
+   */
+
+  /*
+   * Even on all four sides. The home-indicator inset is added below only, because it is device
+   * chrome rather than visual padding — folding it into the shorthand made the footer look
+   * bottom-heavy on devices that report one.
+   */
+  .sidebar-foot {
+    padding: 12px;
+    padding-bottom: calc(12px + var(--safe-bottom));
+  }
+
+  /* Horizontal insets are set once, in the safe-area block below. */
+  .content {
+    padding-top: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .sidebar.collapsed {
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------- page head */
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.page-title {
+  font-size: 22px;
+  font-weight: 600;
+}
+.page-desc {
+  font-size: 14px;
+  color: var(--fg-muted);
+  margin-top: 4px;
+  /* THE deliberate exception to "no max-width". A line of prose stretched across an
+     ultra-wide monitor is unreadable — the eye loses the line on the return sweep. Set in
+     ch so it tracks the font, not a guessed pixel count. Applies to prose only, never to
+     tables, cards, forms or charts. */
+  max-width: 95ch;
+}
+
+/* ----------------------------------------------------------- filter toolbar
+   The single shared search + filter row for every record-list page. One horizontal flex
+   row on desktop; wraps on tablets; stacks full-width on phones. Reuses the app's input
+   and select tokens (border-strong, primary focus ring, card surface) so the controls read
+   as part of the form system, not bespoke to this bar. Sits flush above the table inside
+   the card body, with no margin between it and the data.
+   ---------------------------------------------------------------- */
+.filter-toolbar {
+  /*
+   * Two-zone row: search fills the left and grows into spare width; the dropdowns + Reset
+   * are grouped at the right (`.ftb-filters`) at a fixed width each. A single row on
+   * desktop, wrapping on smaller screens.
+   *
+   * Inset to 18px — the same content edge as .card-head and .card-body — so the search field
+   * lines up with the card title directly above it. This was briefly flush to the card edge,
+   * which did align it with the PAGE title, but a control pressed against a border reads as
+   * cramped and the page title is outside this card anyway. The card's inset is the grid that
+   * actually contains the control: card title, search field and record count all start on one
+   * line. The table below keeps its denser 14px cell padding, normal for a data grid.
+   */
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card-alt);
+  /*
+   * Not page-sticky on purpose. Each table scrolls inside its own .table-wrap (max-height
+   * 620px, overflow auto, with a sticky <th>), so the toolbar above it never leaves view
+   * while the table is scrolled — filtering stays reachable without pinning the bar to the
+   * viewport. A page-sticky bar would also have to clear the 60px app topbar, and that
+   * offset is fragile when the topbar wraps, so the internal-scroll model is the cleaner
+   * choice here.
+   */
+}
+
+/* ---- search input (left zone: fills remaining width) ---- */
+.ftb-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  /* Grows to absorb spare width, never shrinks below usable. The left zone. */
+  flex: 1 1 240px;
+  min-width: 180px;
+  color: var(--fg-muted);
+}
+.ftb-search-icon {
+  position: absolute;
+  left: 10px;
+  pointer-events: none;
+}
+.ftb-search-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 32px 0 32px;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--fg);
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.ftb-search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+.ftb-search.active .ftb-search-input {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+}
+/* Hide the UA cancel — we render our own for keyboard + screen-reader access. */
+.ftb-search-input::-webkit-search-cancel-button {
+  display: none;
+}
+.ftb-search-clear {
+  position: absolute;
+  right: 7px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+}
+.ftb-search-clear:hover {
+  background: var(--card);
+  color: var(--fg);
+}
+
+/* ---- right zone: dropdowns + Reset, pinned right, each a fixed width ---- */
+.ftb-filters {
+  margin-left: auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  /* Keep the group to the right; wraps under the search on narrow screens. */
+  justify-content: flex-end;
+}
+.ftb-select {
+  /* Fixed width so every dropdown is the same size and the right edge stays aligned. */
+  flex: 0 0 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ftb-select-label {
+  /* Label above the control: value never masked, dropdown matches search input height. */
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  padding-left: 1px;
+}
+.ftb-select-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 8px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg);
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.ftb-select-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+/* ---------------------------------------------------------------- bulk bar
+
+   Sits between the filter toolbar and the table, and exists ONLY while rows are ticked.
+
+   Styled as a mode rather than a control strip: a tinted surface with an accent edge, so it
+   reads as "the table is in a selection state" instead of as more chrome that happens to
+   contain a red button. That is the whole reason it replaced a permanent "Delete N shown" —
+   the scope is what the user ticked, not what a label claims.
+   ---------------------------------------------------------------- */
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 10px 18px;
+  background: var(--primary-soft);
+  border-bottom: 1px solid var(--primary-border);
+  /* Accent edge on the leading side; the tint alone is easy to miss on a busy page. */
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+.bulk-count {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.bulk-count strong {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  color: var(--fg);
+}
+.bulk-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+/*
+ * The count badge on a button whose action applies to FEWER rows than are selected. Shown only
+ * in that case, so its presence is the signal that some ticks will be skipped.
+ */
+.bulk-sub {
+  margin-left: 2px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--border);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+.bulk-clear {
+  /* Pushed to the trailing edge — leaving the mode is not one of the actions. */
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--fg-muted);
+  cursor: pointer;
+}
+.bulk-clear:hover {
+  background: var(--card);
+  border-color: var(--primary-border);
+  color: var(--fg);
+}
+
+/* ---- Reset button (only renders while a filter is active) ---- */
+.ftb-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  /* Matches the select height so the right zone stays on one baseline. */
+  height: 36px;
+  padding: 0 12px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+.ftb-reset:hover {
+  background: var(--card);
+  color: var(--fg);
+  border-color: var(--fg-subtle);
+}
+
+/* ---- record count (lives in the table header, not the toolbar) ---- */
+.ftb-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+/* ---- responsive: tablets wrap, phones stack full-width ---- */
+@media (max-width: 860px) {
+  .ftb-search {
+    flex: 1 1 100%;
+  }
+  .ftb-filters {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .ftb-select {
+    flex: 1 1 calc(50% - 6px);
+  }
+}
+@media (max-width: 560px) {
+  /*
+   * Two per row, not one. Stacking three filters full-width cost ~200px of vertical space and
+   * pushed the table off the first screen; a select showing "All" needs nowhere near 350px.
+   * Only below 340px — narrower than any current phone — do they go full width.
+   */
+  .ftb-select {
+    flex: 1 1 calc(50% - 6px);
+  }
+}
+@media (max-width: 340px) {
+  .ftb-select {
+    flex: 1 1 100%;
+  }
+}
+
+.toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  /*
+   * Space above as well as below. The action row (Export CSV / Add …) sits directly under
+   * whatever the page put before it — a page heading, an explanatory alert, a card of derived
+   * prices — and with margin only underneath, the buttons crowd the block above and read as
+   * belonging to it rather than to the table they act on.
+   */
+  margin-top: 22px;
+  margin-bottom: 18px;
+}
+
+/* Except at the very top of a page, where there is nothing above to separate from. */
+.toolbar:first-child {
+  margin-top: 0;
+}
+.toolbar-spacer {
+  flex: 1;
+}
+
+/* ---------------------------------------------------------------- card */
+
+.card {
+  width: 100%;
+  min-width: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.card-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+.card-sub {
+  font-size: 13px;
+  color: var(--fg-subtle);
+}
+.card-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.card-body {
+  padding: 18px;
+}
+.card-body.tight {
+  padding: 0;
+}
+
+/*
+ * Card grid. auto-fit + minmax is what makes this responsive without breakpoints: one
+ * column on a phone, two on a laptop, three or four on a 2560px monitor. `min(…, 100%)`
+ * stops the track from overflowing a viewport narrower than the minimum.
+ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr));
+  gap: 18px;
+  align-items: start;
+  /* Separates the grid from whatever follows it.
+     //
+     `.page-head` and `.alert` each carry their own vertical margin, but this had none, so a
+     stats row sat flush against the card below it and the two read as one block with a line
+     through it. The gap between cards was never the problem; the gap after them was. */
+  margin-bottom: 18px;
+}
+
+/* Nothing follows the last block, so its margin only adds dead space above the fold. */
+.content > .grid:last-child {
+  margin-bottom: 0;
+}
+/* One full-width column — for cards holding a wide table, where extra columns would hurt. */
+/* Cards in a row match the tallest, rather than each stopping at its own content.
+   opt-in per page: the detail page's "Affected" and "Lifecycle" sit side by side and
+   a short card next to a tall one reads as a hole rather than a choice. */
+.grid.match {
+  align-items: stretch;
+}
+
+.grid.one {
+  grid-template-columns: 1fr;
+}
+/*
+ * A fixed pair of columns, for a row that holds exactly two cards. The outer grid is
+ * auto-fit, so a wide screen offers it a third track that two cards can never fill —
+ * and the empty column beside them reads as a hole in the page, not a margin.
+ *
+ * margin-bottom 0 (overriding .grid's own) because the parent grid's row gap already
+ * separates this row from the next; keeping it would double the space.
+ */
+.grid.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+  margin-bottom: 0;
+}
+/* Nested inside the outer grid, the pair takes the whole row for itself. */
+.grid > .grid.pair {
+  grid-column: 1 / -1;
+}
+/* A card can opt out of the grid and span every column. */
+.grid > .card.span {
+  grid-column: 1 / -1;
+}
+
+/* ------------------------------------------------------------- dashboard
+
+   Information hierarchy, top to bottom:
+     1. the hero — one number that answers "how are we doing", at display size;
+     2. supporting metrics, smaller, with a sparkline for direction;
+     3. the main chart, given the most area of any single element;
+     4. detail widgets, varied in density so they do not read as four copies.
+   ---------------------------------------------------------------- */
+
+/* Hero and main chart sit side by side, collapsing to stacked below 1200px. The hero is
+   given a fixed-ish share so the chart takes the growth on a wide monitor. */
+.hero-row {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: 18px;
+  margin-bottom: 18px;
+  align-items: stretch;
+}
+@media (max-width: 1200px) {
+  .hero-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hero {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.hero-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+/* Display size, and fluid: the number is the point of the page. */
+.hero-value {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(30px, 3.4vw, 44px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-top: 6px;
+  color: var(--fg);
+}
+.hero-sub {
+  font-size: 13px;
+  color: var(--fg-muted);
+  margin-top: 6px;
+}
+.hero-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.hero-split {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.hero-split .k {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.hero-split .v {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 17px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Detail widgets: three across on a wide screen, two on a laptop, one on a tablet. Smaller
+   minimum than the general card grid because these are compact by design.
+
+   Widgets in a row are equal height, unlike the general card grid: they are read as a set,
+   so ragged bottoms look like a mistake rather than like density. The card becomes a flex
+   column and its body takes the slack, which keeps the headers on one line with each other
+   and lets the shortest widget carry the extra whitespace instead of shrinking. */
+.widget-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+.widget-row > .card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.widget-row > .card > .card-head {
+  flex: none;
+}
+.widget-row > .card > .card-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* A table in an equal-height widget must fill the body, otherwise its own scrollbar floats
+   in the middle of the card — directly under the last row, with empty card beneath it. */
+.widget-row > .card > .card-body > .table-wrap {
+  flex: 1;
+}
+
+/* A compact ranked list: label, micro-bar, value. Denser than a chart, lighter than a table. */
+.ranked {
+  display: grid;
+  gap: 2px;
+}
+.ranked-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(48px, 96px) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+.ranked-row:last-child {
+  border-bottom: none;
+}
+.ranked-name {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.ranked-sub {
+  display: block;
+  font-size: 12px;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ranked-value {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Diverging micro-bar: zero in the middle, so a loss reads as a bar to the left. */
+.mini-bar {
+  position: relative;
+  height: 7px;
+  border-radius: 4px;
+  background: var(--card-alt);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.mini-bar > span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--primary);
+}
+.mini-bar > span.neg {
+  background: var(--danger);
+}
+.mini-bar > i {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: 50%;
+  width: 1px;
+  background: var(--border-strong);
+}
+
+/* ---------------------------------------------------------------- stats */
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+/* A row of stat cards.
+   //
+   `.grid.stats` was used in the markup but never defined, so these fell through to `.grid` — a
+   440px minimum track for a card containing one number, and `align-items: start` so each card
+   was only as tall as its own content. That is why two stats matched and the third, which has
+   no hint line, was visibly shorter. */
+.grid.stats {
+  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
+  align-items: stretch;
+}
+
+.grid.stats > .stat {
+  height: 100%;
+}
+
+.stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.stat-value {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 21px;
+  font-weight: 700;
+  margin-top: 5px;
+  color: var(--fg);
+  letter-spacing: -0.02em;
+}
+.stat-hint {
+  font-size: 12px;
+  color: var(--fg-subtle);
+  margin-top: 2px;
+  /* Holds its line even when empty, so a stat with a hint and one without are the same height.
+     Same reasoning as `.calc-per` on the calculator cards. */
+  min-height: 1.25em;
+}
+
+/* ---------------------------------------------------------------- forms */
+
+/*
+ * Forms expand to the card they sit in. auto-fit means a wide card lays fields out in
+ * four or five columns instead of leaving a narrow strip of inputs beside empty space.
+ */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
+  gap: 14px;
+  width: 100%;
+}
+
+.field {
+  display: block;
+}
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 5px;
+}
+.field-label .req {
+  color: var(--danger);
+  margin-left: 2px;
+}
+.field-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--fg-subtle);
+  margin-top: 4px;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--fg);
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  outline: none;
+}
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+.input:disabled,
+.select:disabled {
+  background: var(--card-alt);
+  color: var(--fg-subtle);
+  cursor: not-allowed;
+}
+.input::placeholder {
+  color: var(--fg-subtle);
+}
+.select {
+  cursor: pointer;
+}
+/* Amounts right-align on tabular figures so a column of money lines up. */
+.input.amount {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* ---------------------------------------------------------------- buttons */
+
+.btn {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--card);
+  color: var(--fg);
+  padding: 8px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+.btn:hover:not(:disabled) {
+  background: var(--card-alt);
+  border-color: var(--fg-subtle);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.btn.primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-fg);
+}
+.btn.primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+.btn.danger {
+  color: var(--danger);
+  border-color: var(--border-strong);
+}
+.btn.danger:hover:not(:disabled) {
+  background: var(--danger-bg);
+  border-color: var(--danger);
+}
+
+.btn.quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--fg-muted);
+}
+.btn.quiet:hover:not(:disabled) {
+  background: var(--card-alt);
+  border-color: transparent;
+}
+
+.btn.sm {
+  font-size: 13px;
+  padding: 5px 10px;
+  font-weight: 500;
+}
+.btn.block {
+  width: 100%;
+  justify-content: center;
+  padding: 11px 14px;
+}
+
+.btn-group {
+  display: inline-flex;
+}
+.btn-group .btn {
+  border-radius: 0;
+  margin-left: -1px;
+}
+.btn-group .btn:first-child {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  margin-left: 0;
+}
+.btn-group .btn:last-child {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.btn-group .btn.primary {
+  z-index: 1;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--card);
+  color: var(--fg-muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.icon-btn:hover {
+  background: var(--card-alt);
+  color: var(--fg);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---------------------------------------------------------------- table */
+
+.table-wrap {
+  /* Scrolls inside itself when a table is genuinely wider than the space available, so
+     the page never scrolls sideways. */
+  overflow: auto;
+  max-height: 620px;
+  width: 100%;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  background: var(--card-alt);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--fg);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.table tbody tr:hover td {
+  background: var(--card-alt);
+}
+.table tr.selected td {
+  background: var(--primary-soft);
+}
+/*
+ * `.table tbody tr:hover td` is (0,2,3) and this was (0,2,2), so hovering a ticked row used to
+ * repaint it card-alt and the selection vanished under the cursor — precisely when the user is
+ * about to act on it. The extra class here takes it to (0,3,3) so selection wins.
+ */
+.table tbody tr.selected:hover td {
+  background: var(--primary-soft);
+}
+/*
+ * `open` marks the row whose detail panel is showing below it (the quotations list). It used to
+ * be called `selected`, but `selected` is now the app-wide name for "ticked for a bulk action" —
+ * and a row can be both at once, so the two states must not share one signal or a ticked row
+ * would read as open. Open therefore gets a leading accent bar, selected gets the tint.
+ *
+ * The :hover duplicates exist because `.table tbody tr:hover td` is (0,2,3) and would otherwise
+ * repaint these rows card-alt under the cursor; each override adds the class it needs to win.
+ */
+.table tr.open td {
+  background: var(--card-alt);
+}
+.table tr.open td:first-child {
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+.table tbody tr.open:hover td {
+  background: var(--card-alt);
+}
+.table tr.open.selected td,
+.table tbody tr.open.selected:hover td {
+  background: var(--primary-soft);
+}
+.table tr.dimmed td {
+  color: var(--fg-subtle);
+}
+
+
+/* -------------------------------------------- price change history (Recurring) ----
+   Two pieces, both part of the row:
+     .price-trend         — the small ↑/↓ chip on the rate cell, click to expand
+     .history-row / .history — the expandable row that lists every recorded change
+   The chip is a button because clicking it is the only way to open the timeline; the
+   cell value above stays a normal <td>, so tabular alignment and selection don't break.
+   -------------------------------------------------------------------------------- */
+.table td .price-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 8px;
+  padding: 0 6px;
+  height: 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--card-alt);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--mono);
+  color: var(--fg-muted);
+  cursor: pointer;
+}
+.price-trend.increase { color: var(--success); border-color: var(--success); }
+.price-trend.decrease { color: var(--danger); border-color: var(--danger); }
+.price-trend.none { color: var(--fg-muted); }
+
+.table tr.history-row > td {
+  /*
+   * Span the whole row, the way a definition row does. A subtle border and the same
+   * tint as the open row make it read as part of the charge above rather than a new
+   * entry. No padding on the <td> so the .history container can use the full row width.
+   */
+  background: var(--card-alt);
+  border-top: 1px solid var(--primary-border);
+  padding: 0;
+}
+.history {
+  padding: 12px 16px 16px 36px;
+  /* Indent to clear the SelectAll checkbox column. */
+}
+.history-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  margin-bottom: 8px;
+}
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.history-list li {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 4px 12px;
+  padding: 8px 0;
+  border-top: 1px dashed var(--border);
+}
+.history-list li:first-child { border-top: none; padding-top: 4px; }
+.history-when {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--fg);
+  align-self: start;
+}
+.history-what {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: 13px;
+  grid-column: 2;
+}
+.history-why {
+  font-size: 13px;
+  color: var(--fg);
+  grid-column: 2;
+  display: grid;
+  gap: 2px;
+}
+.history-meta {
+  font-size: 11px;
+  color: var(--fg-subtle);
+}
+
+/* ---- the row-selection checkbox column ---- */
+.table th.select-col,
+.table td.select-col {
+  /* Shrink to the control; 1% with the table's auto layout collapses to the content width. */
+  width: 1%;
+  padding-right: 0;
+  /* The tick is a control, not data — it does not share the text columns' left rhythm. */
+  text-align: center;
+  vertical-align: middle;
+}
+.row-check {
+  /* Explicit size: the UA default is ~13px, too small a target beside 36px controls. */
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--primary);
+  cursor: pointer;
+  vertical-align: middle;
+}
+.table td.amount,
+.table th.amount {
+  text-align: right;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.table th.amount {
+  font-family: var(--sans);
+}
+.table td.wrap {
+  white-space: normal;
+  min-width: 190px;
+}
+.table td .secondary {
+  display: block;
+  font-size: 12px;
+  color: var(--fg-subtle);
+  white-space: normal;
+  margin-top: 1px;
+}
+.table tfoot td {
+  background: var(--card-alt);
+  font-weight: 700;
+  border-top: 2px solid var(--border-strong);
+  border-bottom: none;
+  position: sticky;
+  bottom: 0;
+}
+/*
+ * Footer totals belong at the bottom of the card, not wherever the last data row happens to
+ * end. `.fill` stretches the table to its wrapper (which the widget cards give a definite
+ * height via flex), and `.table-filler` — an empty final row at `height: 100%` — absorbs the
+ * slack so the real rows keep their natural height and the gap opens above the total instead.
+ * With enough rows to overflow, the filler collapses to zero and nothing changes.
+ */
+/*
+ * A filling table needs a container with a definite height, or `height: 100%` resolves against
+ * its own content and the filler collapses to nothing. Rather than repeat the flex chain for
+ * every row layout that might hold one (.widget-row already has it, .hero-row and the plain
+ * grids did not), key off the table itself with `:has()` — then any card anywhere gets the
+ * behaviour, which is what "consistent across all summary tables" actually requires.
+ *
+ * Degrades safely: a browser without `:has()` simply shows the total under the last row, as
+ * before.
+ */
+.card:has(> .card-body > .table-wrap.fill) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.card:has(> .card-body > .table-wrap.fill) > .card-head {
+  flex: none;
+}
+.card:has(> .card-body > .table-wrap.fill) > .card-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.card:has(> .card-body > .table-wrap.fill) > .card-body > .table-wrap.fill {
+  flex: 1;
+}
+
+.table-wrap.fill > .table {
+  height: 100%;
+}
+.table tr.table-filler {
+  height: 100%;
+}
+.table tr.table-filler td {
+  padding: 0;
+  border-bottom: none;
+  background: none;
+}
+/* An empty row must not light up on hover — there is nothing there to point at. */
+.table tbody tr.table-filler:hover td {
+  background: none;
+}
+
+.table .subtle {
+  color: var(--fg-subtle);
+}
+
+.table-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* ---------------------------------------------------------------- feedback */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+  background: var(--card-alt);
+  white-space: nowrap;
+}
+.badge.success {
+  color: var(--success);
+  background: var(--success-bg);
+  border-color: transparent;
+}
+.badge.warning {
+  color: var(--warning);
+  background: var(--warning-bg);
+  border-color: transparent;
+}
+.badge.danger {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-color: transparent;
+}
+.badge.info {
+  color: var(--primary);
+  background: var(--primary-soft);
+  border-color: transparent;
+}
+
+.alert {
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  font-size: 14px;
+  border: 1px solid;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.alert + .alert,
+.alert:not(:first-child) {
+  margin-top: 10px;
+}
+
+/* An alert used as a page-level block needs room UNDER it too.
+   //
+   It already had a top margin, so it separated from what came before and then sat flush against
+   the card after it — which is what made the settings page read as one continuous slab. Scoped
+   to a direct child of `.content` so alerts nested inside cards, forms and dialogs keep their
+   own tighter spacing. */
+.content > .alert {
+  margin-bottom: 18px;
+}
+.alert .alert-body {
+  min-width: 0;
+}
+.alert .alert-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.alert.danger {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-color: var(--danger);
+}
+.alert.success {
+  color: var(--success);
+  background: var(--success-bg);
+  border-color: var(--success);
+}
+.alert.warning {
+  color: var(--warning);
+  background: var(--warning-bg);
+  border-color: var(--warning);
+}
+.alert.info {
+  color: var(--fg);
+  background: var(--primary-soft);
+  border-color: var(--primary-border);
+}
+.alert .detail {
+  color: var(--fg-muted);
+  font-weight: 400;
+}
+
+.empty {
+  padding: 44px 20px;
+  text-align: center;
+  color: var(--fg-subtle);
+  font-size: 14px;
+}
+.empty .empty-title {
+  color: var(--fg);
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.7s linear infinite;
+  vertical-align: -3px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
+
+/* Positive / negative money. Always paired with an explicit sign in the text. */
+.pos {
+  color: var(--success);
+}
+.neg {
+  color: var(--danger);
+}
+
+.bar-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--card-alt);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  min-width: 70px;
+}
+.bar-track > span {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+}
+
+/* ---------------------------------------------------------------- auth */
+
+/* ------------------------------------------------------------ auth screen
+
+   Two panes: the sign-in column left, one large field of brand colour right.
+   40/60 above the breakpoint, a single column below it — a marketing panel on a
+   phone would push the only control people came for below the fold.
+
+   Both panes carry the SAME dot field at the same 28px pitch, in two inks. That
+   is what makes the split read as one screen rather than two pages glued
+   together: the rhythm continues across the seam. */
+
+.auth-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 900px) {
+  .auth-screen {
+    grid-template-columns: 40% 60%;
+  }
+}
+
+.auth-panel-form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 40px 24px;
+  background: var(--page);
+  overflow: hidden;
+}
+
+/* Two blurred washes of brand colour. Inset negatively so the blur's soft edge
+   never reaches the panel border and reads as a seam. */
+.auth-panel-form::before {
+  content: "";
+  position: absolute;
+  inset: -15%;
+  z-index: 0;
+  background:
+    radial-gradient(38% 38% at 22% 18%, color-mix(in srgb, var(--primary) 26%, transparent), transparent 70%),
+    radial-gradient(42% 42% at 82% 88%, color-mix(in srgb, var(--primary) 18%, transparent), transparent 70%);
+  filter: blur(70px);
+  pointer-events: none;
+}
+
+/* The dot field, inverted from the blue pane's. Expressed in --fg rather than a
+   literal, so it flips to light dots on the dark theme instead of disappearing. */
+.auth-panel-form::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: radial-gradient(color-mix(in srgb, var(--fg) 6%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/*
+ * Everything in this pane must lift itself above those two pseudo-elements.
+ *
+ * They paint at z-index 0, and a child that sets neither position nor z-index
+ * renders BENEATH the dot grid — subtly dirty, and easy to lose ten minutes to.
+ */
+.auth-logo,
+.auth-card,
+.auth-foot {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 36px;
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--primary) 15%, transparent);
+  background: var(--card);
+  box-shadow: var(--shadow-lg);
+  display: grid;
+  gap: 14px;
+}
+
+/* The card opens directly on the heading — the brand row moved out and above it,
+   and two marks on one screen reads as a mistake. */
+.auth-card > h1,
+.auth-card > p {
+  margin: 0;
+}
+
+.auth-foot {
+  font-size: 13px;
+  color: var(--fg-subtle);
+}
+
+/* ---------------------------------------------------- the marketing panel */
+
+.auth-panel-marketing {
+  position: relative;
+  display: none;
+  place-items: center;
+  padding: 48px;
+  color: #ffffff;
+  overflow: hidden;
+  /* SELISE blue into Oxford Blue. Deliberately NOT the source design's indigo/violet. */
+  background: linear-gradient(135deg, #0066b2, #001728);
+}
+@media (min-width: 900px) {
+  .auth-panel-marketing {
+    display: grid;
+  }
+}
+
+/* Two soft washes so the gradient is never a flat field. */
+.auth-panel-marketing::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(50% 50% at 85% 8%, #ffffff1f, transparent 70%),
+    radial-gradient(55% 55% at 8% 92%, #0000002e, transparent 70%);
+  pointer-events: none;
+}
+
+/* The same 28px dot pitch as the form pane, in white. Faint on purpose: pushed
+   higher it stops being paper grain and competes with the headline over it. */
+.auth-panel-marketing::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: radial-gradient(#ffffff24 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+.auth-marketing-content {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+}
+
+.auth-kicker {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffffffb3;
+  margin-bottom: 14px;
+}
+
+.auth-headline {
+  margin: 0 0 28px;
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+.auth-features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+.auth-features li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #ffffffe6;
+}
+.auth-feature-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #ffffff1f;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .auth-card {
+    animation: auth-card-in 340ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  }
+}
+@keyframes auth-card-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.center-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  color: var(--fg-muted);
+  text-align: center;
+  padding: 24px;
+}
+
+.page-foot {
+  margin-top: 28px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--fg-subtle);
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: 20px;
+}
+
+.definition {
+  font-size: 14px;
+  line-height: 1.9;
+}
+.definition dt {
+  display: inline;
+  color: var(--fg-subtle);
+  font-weight: 600;
+  margin-right: 6px;
+}
+.definition dd {
+  display: inline;
+  margin: 0;
+  color: var(--fg);
+}
+.definition .line {
+  display: block;
+}
+
+/* -------------------------------------------------------------- busy dialog
+
+   Blocking progress modal. Same native <dialog> approach as the confirm below, with one
+   deliberate difference: no close affordance at all. The work is still running, so there is
+   nothing for a close button to mean.
+   ---------------------------------------------------------------- */
+
+.busy {
+  width: min(400px, calc(100vw - 32px));
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--fg);
+  box-shadow: var(--shadow-lg);
+  margin: auto;
+}
+.busy::backdrop {
+  background: rgba(16, 24, 40, 0.55);
+}
+.busy-body {
+  padding: 20px;
+}
+.busy-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.busy-message {
+  font-size: 15px;
+  font-weight: 600;
+}
+.busy-track {
+  margin-top: 14px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--card-alt);
+  overflow: hidden;
+}
+.busy-track > span {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+  /* Width is the only thing that animates, so a slow operation still reads as moving. */
+  transition: width 0.2s ease;
+}
+.busy-count {
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.busy-note {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+
+/* ------------------------------------------------------------------- toast
+
+   The result notice after a blocking operation. Fixed to the bottom so it cannot push
+   content around, and it dismisses itself — a stale "done" banner above fresh data is
+   worse than no banner.
+   ---------------------------------------------------------------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(20px + var(--safe-bottom));
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(520px, calc(100vw - 24px));
+  padding: 11px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow-lg);
+  font-size: 13px;
+}
+.toast.success {
+  border-color: var(--success);
+  color: var(--success);
+}
+.toast.danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.toast > span {
+  /* The message wraps rather than stretching the toast off-screen. */
+  min-width: 0;
+}
+.toast-close {
+  margin-left: 4px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------- confirm dialog
+
+   The native <dialog> in the top layer, so no z-index has to out-rank the sidebar or a
+   sticky table header. `dialog` ships with a UA border and padding; both are cleared and
+   the card treatment applied instead, so a confirmation looks like the rest of the app.
+   ---------------------------------------------------------------- */
+
+.confirm {
+  width: min(440px, calc(100vw - 32px));
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--fg);
+  box-shadow: var(--shadow-lg);
+  /* Centred in the viewport rather than pinned to the top, which is the UA default. */
+  margin: auto;
+}
+
+.confirm::backdrop {
+  background: rgba(16, 24, 40, 0.45);
+}
+
+.confirm-head {
+  padding: 16px 18px 0;
+}
+
+.confirm-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.confirm-body {
+  padding: 8px 18px 0;
+  font-size: 13px;
+  color: var(--fg-subtle);
+}
+
+.confirm-text {
+  line-height: 1.55;
+  /* Messages carry \n-separated detail; honour it without needing markup per call site. */
+  white-space: pre-line;
+}
+
+.confirm-list {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+  /* Long enumerations (every change a sync is about to apply) scroll inside the dialog. */
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.confirm-list li {
+  line-height: 1.5;
+}
+
+.confirm-foot {
+  margin-top: 18px;
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ---------------------------------------------------------------- modal
+
+   The confirm dialog's general sibling: same native <dialog> foundation, but for
+   content — a form, a preview — rather than a yes/no question. The width comes
+   from an inline style per use, so no size-variant classes accumulate here. Must
+   stay above the responsive overrides banner like everything else in this file.
+   ---------------------------------------------------------------- */
+
+.modal {
+  width: min(520px, calc(100vw - 32px));
+  max-height: min(86vh, 860px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--fg);
+  box-shadow: var(--shadow-lg);
+  /* Centred in the viewport rather than pinned to the top, which is the UA default. */
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  /* The body is the part that scrolls; a scrolling dialog would take the footer with it. */
+  overflow: hidden;
+}
+
+.modal::backdrop {
+  background: rgba(16, 24, 40, 0.45);
+}
+
+.modal-head {
+  padding: 14px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.modal-sub {
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+  margin-top: 2px;
+}
+
+/* Pushes the close button to the right whatever the title width. */
+.modal-head > .btn {
+  margin-left: auto;
+}
+
+.modal-body {
+  padding: 16px 18px;
+  overflow-y: auto;
+}
+
+/* For content that brings its own frame — the report preview's iframe. */
+.modal-body.flush {
+  padding: 12px 14px;
+  background: var(--bg);
+}
+
+/* The browser's PDF viewer inside the modal. Grey ground, not white, so a report's
+   own white page reads as the document against the app rather than blending in. */
+.report-frame {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  background: var(--bg);
+  display: block;
+}
+
+.modal-foot {
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* =====================================================================
+   RESPONSIVE OVERRIDES — these must stay at the end of the file.
+
+   A media query adds no specificity, so a `.stat-row` rule inside one loses to the plain
+   `.stat-row` rule if that appears later in the source. The phone overrides were originally
+   written up beside the shell and silently did nothing for the components defined below it —
+   two columns of stat cards stayed one column with no error anywhere. Anything added here goes
+   after every component it overrides.
+   ===================================================================== */
+
+/* ------------------------------------------------------------- safe areas
+
+   On a phone the topbar sat flush against the top of the viewport, which reads as attached to
+   the screen rather than placed on it — and with viewport-fit=cover it would sit *under* a
+   notch. So the topbar carries the top inset plus a little breathing room of its own, and the
+   drawer carries the top and bottom insets so its brand and user row clear the notch and the
+   home indicator.
+
+   Horizontal insets use max() rather than addition: in landscape the notch eats into one side
+   only, and 16px of padding is already enough unless the inset exceeds it.
+   ---------------------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .topbar {
+    /* 10px of actual breathing room, on top of whatever the device reserves. */
+    padding-top: calc(var(--safe-top) + 10px);
+    padding-bottom: 10px;
+    /* Equal on both sides, so the two icons are inset identically from their edges. */
+    padding-left: max(16px, var(--safe-left));
+    padding-right: max(16px, var(--safe-right));
+    /* The bar is taller now; let its height follow content rather than fight min-height. */
+    min-height: 0;
+    /*
+     * Hamburger hard left, theme toggle hard right — the two things you reach for on a phone
+     * belong at the two thumb-reachable corners, not bunched in the middle. `space-between`
+     * states that directly instead of depending on a spacer element to do it.
+     */
+    justify-content: space-between;
+    align-items: center;
+  }
+  .topbar > .toolbar-spacer {
+    /* Redundant once the bar distributes its own children. */
+    display: none;
+  }
+  .content {
+    padding-left: max(16px, var(--safe-left));
+    padding-right: max(16px, var(--safe-right));
+    padding-bottom: calc(24px + var(--safe-bottom));
+  }
+  /* The drawer is fixed to the viewport edges, so it owns its own insets. */
+  .sidebar,
+  .sidebar.collapsed {
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+  }
+}
+
+@media (max-width: 560px) {
+  .content,
+  .topbar {
+    padding-left: max(12px, var(--safe-left));
+    padding-right: max(12px, var(--safe-right));
+  }
+}
+
+/*
+ * The drawer toggle: hidden on desktop, revealed at the drawer breakpoint.
+ *
+ * Both rules must live here rather than up beside the shell, because `.icon-btn` sets
+ * `display: grid` and is defined later in the file — with equal specificity it won on source
+ * order, so the hamburger showed at every width including 1280px. Found by rendering the page
+ * and reading the computed style, which is the only way this kind of failure surfaces.
+ */
+.nav-toggle {
+  display: none;
+}
+@media (max-width: 860px) {
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  /*
+   * Kept visible: in the drawer this button becomes the close control (see layout.tsx), which
+   * is what its position in the top corner implies. It is only dead if it is still wired to
+   * collapse-to-icons, which means nothing here.
+   *
+   * If it is ever hidden again, the rule must live in this block — after `.icon-btn`, which
+   * sets `display: grid` and would otherwise win on source order.
+   */
+  .sidebar-toggle {
+    margin-left: auto;
+  }
+}
+
+/* ----------------------------------------------------------------- phones
+
+   Below 560px the constraint is width, not layout: every grid already collapses to one column
+   via `minmax(min(Npx, 100%), 1fr)`, so what is left is trimming the things that assume a
+   comfortable line length.
+   ---------------------------------------------------------------- */
+
+@media (max-width: 560px) {
+  .page-title {
+    font-size: 19px;
+  }
+  .page-head {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  /* Page-level actions go full width rather than crowding onto one line as tap targets. */
+  .page-head .row {
+    width: 100%;
+  }
+  .page-head .row > .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  /* The period control is the topbar's only real content here; let it take the width.
+     min-height is deliberately absent — the safe-area block sizes this bar from its padding. */
+  .topbar {
+    gap: 10px;
+  }
+  /*
+   * "Period [June 2026]" shares one row. Giving the select 100% width put it below its own
+   * label, which made the topbar three rows tall — a sixth of the screen before any content.
+   */
+  .topbar > label.row {
+    flex: 1 1 100%;
+    order: 3;
+    gap: 8px;
+  }
+  .topbar .select {
+    flex: 1 1 auto;
+    width: auto !important;
+    min-width: 0;
+  }
+
+  .card-head {
+    padding: 12px 14px;
+  }
+  /* Track the card's phone inset so the toolbar keeps aligning with the card title. */
+  .filter-toolbar {
+    padding: 10px 14px;
+  }
+  /*
+   * Card-header actions become their own full-width row. Several pages put an input plus a
+   * button up there, which does not fit beside a title on a 360px screen.
+   */
+  .card-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+  .card-actions > .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  .card-body {
+    padding: 14px;
+  }
+
+  /*
+   * Tables keep scrolling inside themselves — a 10-column billing row cannot honestly become
+   * a phone layout, and horizontal scroll beats hiding money. Tighter cells and a shorter
+   * viewport just make more of it visible at once.
+   */
+  .table th,
+  .table td {
+    padding: 8px 10px;
+  }
+  .table {
+    font-size: 13px;
+  }
+  .table-wrap {
+    max-height: 460px;
+    /* Momentum scrolling, so a flick behaves like a native list. */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /*
+   * Two columns, not one. The auto-fit default gives a single column below ~410px, and four
+   * stacked stat cards pushed the actual table most of a screen down. Money is monospaced, so
+   * the value has to shrink a little to fit half the width without clipping.
+   */
+  .stat-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .stat {
+    padding: 12px;
+  }
+  .stat-value {
+    font-size: 17px;
+  }
+  .stat-label {
+    font-size: 11px;
+  }
+  /* A segmented control wider than the screen is unusable; let it wrap. */
+  .btn-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+  }
+
+  /* ---- dashboard Time range / View controls ----
+     Left-aligned rather than pushed to opposite edges. `.toolbar-spacer` separates them nicely
+     on a wide screen, but once the row wraps it leaves a gap of dead space, and a control
+     shoved against the right edge reads as unrelated to the label sitting on the left.
+     Each labelled group takes its own full-width row, and its segmented buttons divide that
+     row equally — so every button is the same width whether the group holds two or five. */
+  .toolbar {
+    gap: 14px;
+    align-items: stretch;
+    margin-bottom: 16px;
+  }
+  /*
+   * Scoped to the dashboard toolbar on purpose. As a bare `.toolbar-spacer` this also hid the
+   * one inside `.topbar`, which is what pushes the theme toggle to the far right — both icons
+   * ended up side by side on the left.
+   */
+  .toolbar > .toolbar-spacer {
+    display: none;
+  }
+  .toolbar > div,
+  .toolbar > .field {
+    width: 100%;
+  }
+  .toolbar .btn-group {
+    display: flex;
+    width: 100%;
+    /* Equal division only works if the group refuses to wrap. */
+    flex-wrap: nowrap;
+  }
+  .toolbar .btn-group .btn {
+    flex: 1 1 0;
+    min-width: 0;
+    /* Narrower than the 14px default so five labels fit a 351px row without truncating. */
+    padding: 8px 6px;
+    justify-content: center;
+  }
+  /* Match the toolbar's rhythm so the sections above the cards are evenly spaced. */
+  .stat-row {
+    margin-bottom: 16px;
+  }
+}
+
+/* ---------------------------------------------------------------- print
+
+   Finance output gets printed and forwarded, so this is a real requirement rather
+   than a nicety: drop the chrome, force the light palette, let tables break across
+   pages, and show the URL-free document as it should appear on paper.
+   ---------------------------------------------------------------- */
+
+@media print {
+  :root {
+    --page: #ffffff;
+    --card: #ffffff;
+    --card-alt: #ffffff;
+    --border: #cbd0d8;
+    --border-strong: #9aa1ad;
+    --fg: #000000;
+    --fg-muted: #333333;
+    --fg-subtle: #555555;
+  }
+
+  .sidebar,
+  .topbar,
+  .toolbar,
+  .no-print,
+  .card-actions,
+  .table-actions,
+  .btn,
+  .icon-btn {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff;
+    font-size: 11pt;
+  }
+
+  .app,
+  .main {
+    display: block;
+  }
+
+  .content {
+    padding: 0;
+    max-width: none;
+  }
+
+  .card {
+    box-shadow: none;
+    border-color: #cbd0d8;
+    break-inside: avoid;
+    margin-bottom: 14px;
+  }
+
+  .table-wrap {
+    max-height: none;
+    overflow: visible;
+  }
+
+  /* The search/filter bar is interaction, not data — never print it. */
+  .filter-toolbar {
+    display: none !important;
+  }
+
+  .table th {
+    position: static;
+    background: #f2f4f7 !important;
+  }
+  .table tfoot td {
+    position: static;
+  }
+  /* Repeat headers when a long billing table spans pages. */
+  thead {
+    display: table-header-group;
+  }
+  tr {
+    break-inside: avoid;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+}
+
+.print-only {
+  display: none;
+}
+
+/* ==========================================================================
+   Public shell — Packages and Calculator
+   ==========================================================================
+   A separate shell from the admin sidebar app. These pages are reached from a
+   link or a search result by someone who has never seen the product, so the
+   chrome is a single centred header rather than a navigation column.
+
+   The width cap lives on the inner wrappers, not on a body-level container, so
+   a page can still bleed a section full-width (the packages comparison table
+   scrolls edge to edge on a phone) while its prose stays readable.
+   ========================================================================== */
+
+.public-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--page);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+}
+
+.public-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding-top: var(--safe-top);
+}
+
+/*
+ * One width for the shell, set by the page rather than hard-coded per element, so the
+ * calculator can run wider than the packages page without duplicating the rule. The
+ * marketing site caps at 80rem of prose; a two-pane tool with a catalog beside a working
+ * area is a different problem, and capping it at a text measure leaves a third of a
+ * laptop screen empty.
+ */
+.public-header-inner,
+.public-footer-inner,
+.public-page-head,
+.public-section {
+  width: 100%;
+  max-width: var(--shell, var(--shell-max));
+  margin-inline: auto;
+  padding-inline: var(--shell-pad);
+}
+
+.public-shell.wide {
+  --shell: var(--shell-wide);
+}
+
+.public-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 64px;
+}
+
+.public-brand {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  /* The logo is a mask over currentColor — this is what inks it. */
+  color: var(--fg);
+  flex-shrink: 0;
+}
+
+.public-brand:hover {
+  color: var(--primary);
+}
+
+.public-brand-name {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.public-brand-sub {
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--fg-subtle);
+  letter-spacing: -0.02em;
+}
+
+.public-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  /* Takes the slack so the actions sit hard right. */
+  margin-right: auto;
+}
+
+.public-nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.public-nav-item:hover {
+  background: var(--card-alt);
+  color: var(--fg);
+}
+
+.public-nav-item.active {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.public-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.public-main {
+  flex: 1;
+  padding-block: 32px 56px;
+}
+
+.public-page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.public-page-title {
+  font-size: clamp(24px, 3.4vw, 32px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
+.public-page-desc {
+  margin: 8px 0 0;
+  max-width: 68ch;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+}
+
+.public-footer {
+  border-top: 1px solid var(--border);
+  background: var(--card);
+  padding-bottom: var(--safe-bottom);
+}
+
+.public-footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  justify-content: space-between;
+  padding-block: 18px;
+  font-size: 13px;
+  color: var(--fg-subtle);
+}
+
+.public-footer-note {
+  color: var(--fg-subtle);
+}
+
+/* Below this the nav labels crowd the brand out; icons alone stay unambiguous
+   because there are only two destinations and both are in the header. */
+@media (max-width: 620px) {
+  .public-header-inner {
+    gap: 12px;
+    padding-inline: 14px;
+  }
+  .public-nav-item span {
+    display: none;
+  }
+  .public-nav-item {
+    padding: 8px;
+  }
+  .public-header-inner,
+  .public-footer-inner,
+  .public-page-head,
+  .public-section {
+    padding-inline: 16px;
+  }
+}
+
+/* ==========================================================================
+   Packages page
+   ==========================================================================
+   Cards for scanning, a table for comparing. The cards carry only the handful
+   of numbers a buyer weighs first; the table below is the complete answer, so
+   nothing here is the sole source of a figure.
+   ========================================================================== */
+
+.pkg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  align-items: stretch;
+}
+
+.pkg-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 26px 22px;
+  box-shadow: var(--shadow-sm);
+  /* Stretch, so a row of cards shares one baseline for its footer regardless of how
+     many highlights each tier happens to have. */
+  height: 100%;
+}
+
+.pkg-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow);
+}
+
+.pkg-card.recommended:hover {
+  border-color: var(--primary);
+}
+
+/* Pushes the highlight list to the bottom of a stretched card. */
+.pkg-highlights {
+  margin-top: auto;
+}
+
+/* The recommended card is raised by border and shadow, never by colour alone —
+   the ribbon carries the meaning in words for anyone who cannot see either. */
+.pkg-card.recommended {
+  border-color: var(--primary);
+  box-shadow: var(--shadow);
+}
+
+.pkg-ribbon {
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--primary-fg);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.pkg-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.pkg-tagline {
+  margin: -6px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--fg-muted);
+  /* Keeps the price line level across cards whose taglines differ in length. */
+  min-height: 2.9em;
+}
+
+.pkg-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pkg-price-value {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* "Talk to us" is a sentence, not an amount — sized so it does not masquerade as one. */
+.pkg-price-value.custom {
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--fg-muted);
+}
+
+.pkg-price-period {
+  font-size: 13px;
+  color: var(--fg-subtle);
+}
+
+.pkg-highlights {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.pkg-highlights li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.pkg-highlights svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--primary);
+}
+
+.pkg-footnote {
+  margin: 0;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+
+/* ------------------------------------------------------------ comparison */
+
+.compare-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.compare-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.compare-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  /* Momentum scrolling on iOS, and a scroll container the page body never inherits. */
+  -webkit-overflow-scrolling: touch;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  /* Package columns share the remaining width evenly so no tier looks favoured by size. */
+  table-layout: fixed;
+  min-width: 720px;
+}
+
+.compare-table th,
+.compare-table td {
+  padding: 12px 14px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+.compare-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--card-alt);
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.compare-table tbody tr:last-child th,
+.compare-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* The row label stays put while the package columns scroll — without it you lose
+   track of which limit you are reading two columns in. */
+.compare-rowhead {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 190px;
+  background: var(--card-alt);
+  font-weight: 600;
+  /* Right border rather than a shadow: it survives the header cell's own sticky
+     stacking, where a shadow gets painted over. */
+  border-right: 1px solid var(--border);
+}
+
+.compare-table thead .compare-rowhead {
+  z-index: 3;
+}
+
+.compare-rowhead-hint {
+  display: block;
+  margin-top: 3px;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+
+.compare-table .recommended {
+  background: var(--primary-soft);
+}
+
+.compare-pkg-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.compare-pkg-price {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.limit-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.limit-label {
+  display: block;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+
+.limit-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1.45;
+  /* The cells hold prose as well as numbers, and some of it is long. */
+  white-space: pre-line;
+}
+
+.limit-unit {
+  color: var(--fg-muted);
+}
+
+.limit-empty {
+  color: var(--fg-subtle);
+}
+
+.pkg-notes {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card-alt);
+}
+
+.pkg-notes p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--fg-muted);
+  /* The source text is a numbered list; its line breaks carry that structure. */
+  white-space: pre-line;
+}
+
+.pkg-cta-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.pkg-cta-strip p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--fg-muted);
+  max-width: 62ch;
+}
+
+/* ==========================================================================
+   Pricing calculator
+   ==========================================================================
+   Two columns: a catalog you pick from, and the estimate you build. The summary
+   sits at the TOP of the estimate column rather than the bottom — the total is
+   the thing being watched while quantities are typed, and a total below a long
+   list of lines scrolls out of view exactly when it starts changing.
+   ========================================================================== */
+
+.calc-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+/* ------------------------------------------------------------- catalog */
+
+.calc-catalog {
+  position: sticky;
+  top: 76px; /* clears the sticky public header */
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 100px);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.calc-catalog-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--fg-subtle);
+}
+
+.calc-catalog-search .input {
+  border: none;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+}
+
+.calc-catalog-search .input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.calc-catalog-scroll {
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.calc-catalog-empty {
+  margin: 12px;
+  font-size: 13px;
+  color: var(--fg-subtle);
+}
+
+.calc-catalog details {
+  border-radius: var(--radius-sm);
+}
+
+.calc-catalog summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  list-style: none;
+  user-select: none;
+}
+
+.calc-catalog summary::-webkit-details-marker {
+  display: none;
+}
+
+.calc-catalog summary:hover {
+  background: var(--card-alt);
+}
+
+.calc-count {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-catalog-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px 7px 28px;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  font: inherit;
+}
+
+.calc-catalog-item:hover:not(:disabled) {
+  background: var(--primary-soft);
+}
+
+.calc-catalog-item:disabled {
+  cursor: default;
+  color: var(--fg-subtle);
+}
+
+.calc-catalog-item.added svg {
+  color: var(--success);
+}
+
+.calc-catalog-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.calc-catalog-item-name {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.calc-catalog-item-meta {
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+
+/* --------------------------------------------------------------- summary */
+
+.calc-main {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.calc-summary {
+  position: sticky;
+  top: 76px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.calc-summary-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.calc-summary-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+.calc-summary-value {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-summary-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.calc-subtotals {
+  list-style: none;
+  margin: 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+}
+
+.calc-subtotals li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.calc-subtotals li span:last-child {
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
+}
+
+.calc-disclaimer {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg-subtle);
+}
+
+/* ----------------------------------------------------------------- lines */
+
+.calc-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.calc-group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-subtle);
+}
+
+/*
+ * Every card is the same skeleton: title, description, input, meta, derived, footer.
+ * A column flex with the footer taking `margin-top: auto` puts the line total on the
+ * bottom edge of whatever height the row settled on, so totals align across the row
+ * even when one card carries a warning and its neighbour does not.
+ */
+.calc-line {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  /* See note 2 on the grid: this is what stops a long name widening the column. */
+  min-width: 0;
+}
+
+/* A flagged line is bordered AND carries an explanatory sentence with an icon —
+   the colour is never the only signal that something needs attention. */
+.calc-line.flagged {
+  border-color: var(--warning);
+}
+
+.calc-line-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.calc-line-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  min-width: 0;
+  /* A long name wraps inside its own card. `break-word` rather than `anywhere` so
+     ordinary names break at spaces and only a single unbroken token is split. */
+  overflow-wrap: break-word;
+  /* Two lines' worth, always. Without a floor, a one-line title in one card and a
+     two-line title in the next push every section below them out of alignment —
+     which is the "content doesn't line up" half of the problem, and no amount of
+     equal card height fixes it. */
+  min-height: calc(2 * 1.3em);
+}
+
+.calc-line-desc {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--fg-muted);
+  overflow-wrap: break-word;
+}
+
+.calc-line-input {
+  /* A checkbox row and a number-input row are different heights; reserving the
+     taller of the two keeps the meta cells below them on the same line. */
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+}
+
+.calc-quantity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.calc-quantity-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+.calc-quantity .input {
+  width: 120px;
+  min-width: 0;
+}
+
+.calc-quantity-unit {
+  font-size: 13px;
+  color: var(--fg-subtle);
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.calc-toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  cursor: pointer;
+  min-width: 0;
+}
+
+/*
+ * Included / Billable / Unit price — three fixed columns, always all three.
+ *
+ * Fixed rather than auto-fit: with auto-fit a narrow card silently drops to two
+ * columns and the cells stop lining up with the card beside it, which is exactly
+ * the inconsistency this layout is meant to remove.
+ */
+.calc-breakdown {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.calc-breakdown > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.calc-breakdown dt {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+}
+
+.calc-breakdown dd {
+  margin: 0;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.calc-breakdown dd .muted {
+  color: var(--fg-subtle);
+  font-size: 12px;
+}
+
+/* Its own row, and it keeps its height even when empty, so a feature with derived
+   prices and one without still align. */
+.calc-per {
+  margin: 0;
+  min-height: 15px;
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--fg-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+/* margin-top:auto is what pins everything below to the bottom of a stretched card. */
+.calc-line-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.calc-line-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.calc-line-total span {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--fg-subtle);
+}
+
+.calc-line-total strong {
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-line-flag,
+.calc-line-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+.calc-line-flag {
+  color: var(--warning);
+}
+
+.calc-line-flag svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.calc-line-note {
+  color: var(--fg-subtle);
+}
+
+.calc-empty {
+  padding: 40px 24px;
+  text-align: center;
+  background: var(--card);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.calc-empty h2 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.calc-empty p {
+  margin: 0 auto;
+  max-width: 52ch;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+/* -------------------------------------------------------- package compare */
+
+.calc-packages {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 20px;
+  background: var(--card-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.calc-packages-head h2 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.calc-packages-head p {
+  margin: 0;
+  max-width: 70ch;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+
+.calc-packages-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.calc-package {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.calc-package.recommended {
+  border-color: var(--primary);
+}
+
+.calc-package-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+.calc-package-price {
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The catalog becomes a normal block above the estimate: a sticky column and a
+   sticky summary competing for a phone's viewport leaves nothing for the lines. */
+@media (max-width: 900px) {
+  .calc-layout {
+    grid-template-columns: 1fr;
+  }
+  .calc-catalog {
+    position: static;
+    max-height: 380px;
+  }
+  /* Stays sticky on a phone, unlike the catalog above it. A tall panel could not share a
+     phone viewport with the line cards, which is why this used to be static — but the
+     collapsed bar is a single line, so the total can follow the reader here too. */
+  .calc-summary {
+    top: 8px;
+  }
+}
+
+/* ==========================================================================
+   Admin extras
+   ========================================================================== */
+
+.admin-help {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--fg-muted);
+}
+
+.admin-help strong {
+  color: var(--fg);
+}
+
+/* ==========================================================================
+   Derived prices (admin)
+   ==========================================================================
+   The workbook's per-100 / per-1000 columns, shown read-only so the screen stays
+   recognisable to whoever maintains the spreadsheet — without creating fields
+   that can drift out of step with the unit price they are derived from.
+
+   Laid out as CARDS, not as label/value rows. The previous version put the name
+   and the figures on one line with `justify-content: space-between` and
+   `white-space: nowrap` on the values: a long feature name ("Emails through
+   Custom Outbound") then wrapped under a set of figures that refused to wrap,
+   and the two collided. Giving each entry its own box with the name on its own
+   line removes the competition for horizontal space entirely — a long name grows
+   downwards inside its own card and cannot touch its neighbours.
+   ========================================================================== */
+
+/* Inset from the card edge.
+   //
+   This grid sits in a card whose body is `tight` (zero padding) because that is what a table
+   inside a card wants — but a grid of small cards pressed against the border reads as broken.
+   Padding here rather than dropping `tight` keeps the card's own header inset unchanged. */
+.derived-grid {
+  padding: 16px 18px;
+  display: grid;
+  /* auto-fill, not auto-fit: auto-fit collapses empty tracks and stretches two
+     cards across a 1400px row, which looks like a bug rather than a layout. */
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  /* Every ROW the same height, not just every card within a row.
+     //
+     `align-items: stretch` is the default and already equalised cards side by
+     side, which is why this looked half-fixed: a row holding a two-line name was
+     taller than the row above it, so scanning down the grid the boxes changed
+     size. `1fr` rows make the tallest card set the height for all of them. */
+  grid-auto-rows: 1fr;
+  gap: 12px;
+}
+
+.derived-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px 14px;
+  background: var(--card-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.derived-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  /* Room for two lines whether or not this name needs them, so a short name and a
+     wrapped one produce the same box and the figures below them sit on one line
+     across the whole grid. */
+  min-height: 2.7em;
+  /* Wraps inside its own card. `break-word` rather than `anywhere` so ordinary
+     names break at spaces and only a single unbroken token is split mid-word. */
+  overflow-wrap: break-word;
+}
+
+.derived-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  margin-top: auto;
+  font-size: 11.5px;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Each figure is its own chip, so the three of them wrap as units instead of
+   breaking mid-number when the card is narrow. */
+.derived-value {
+  white-space: nowrap;
+}
+
+.derived-value b {
+  font-weight: 600;
+  color: var(--fg);
+}
+
+
+/* ==========================================================================
+   Display-currency switcher
+   ==========================================================================
+   Prices are AUTHORED in one currency; this only changes what a visitor reads.
+   The attribution line below the prices carries the rate, its date and a link
+   to check it — a converted price nobody can reproduce is worse than no
+   conversion at all.
+   ========================================================================== */
+
+.fx-switch {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--card);
+}
+
+.fx-switch-item {
+  padding: 5px 9px;
+  border: none;
+  background: transparent;
+  color: var(--fg-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  /* Tabular so the three codes are the same width and the control does not
+     jiggle as the active one changes weight. */
+  font-variant-numeric: tabular-nums;
+}
+
+.fx-switch-item + .fx-switch-item {
+  border-left: 1px solid var(--border);
+}
+
+.fx-switch-item:hover:not(:disabled) {
+  background: var(--card-alt);
+  color: var(--fg);
+}
+
+.fx-switch-item.active {
+  background: var(--primary);
+  color: var(--primary-fg);
+}
+
+.fx-switch-item:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.fx-note {
+  margin: 14px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--fg-subtle);
+}
+
+.fx-note strong {
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.fx-note-error {
+  color: var(--warning);
+}
+
+.fx-note-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* The three currency codes are wider than an icon button; below the phone
+   breakpoint the header already drops its nav labels, and this still fits. */
+@media (max-width: 460px) {
+  .fx-switch-item {
+    padding: 5px 6px;
+    font-size: 11px;
+  }
+}
+
+/* ==========================================================================
+   Logo
+   ==========================================================================
+   A mask rather than an <img>, so the wordmark takes `currentColor` and is
+   correct on every surface with one asset. See components/logo.tsx.
+   ========================================================================== */
+
+/*
+ * The mark: two images side by side, not a mask.
+ *
+ * See components/logo.tsx — the artwork carries three brand colours and a
+ * luminance mask would flatten all three into one tint.
+ */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.logo img {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: none;
+}
+.logo-glyph {
+  transform-origin: 50% 50%;
+}
+
+/*
+ * Nine seconds, linear. Slow enough to read as orbit rather than as a spinner —
+ * a fast rotation in an operational tool signals "working, wait", and this is a
+ * logo, not a progress indicator.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .logo-glyph.spin-orbit { animation: swirl 9s linear infinite; }
+  /* One revolution on arrival — faster than the orbit, because this one has to
+     finish before anybody looks away. Route changes replay it via key remount. */
+  .logo-glyph.spin-once { animation: swirl 1400ms cubic-bezier(0.25, 0.6, 0.3, 1) 1; }
+}
+/*
+ * The transition overlay rotates; the boot overlay spins up and then orbits.
+ *
+ * Same mark, one motion. A page switch is a shorter wait that the reader caused,
+ * so the glyph is already turning when the overlay appears — no spin-up, because
+ * the overlay may only stay the minimum 420ms, and a swing-in cut off mid-way
+ * reads as a stutter rather than as a turn. Faster than the 9s logo orbit on
+ * purpose: this overlay IS the wait, and the rotation has to say so.
+ *
+ * Overrides the rules in index.html's <style>: those load first, and this is the
+ * more specific selector besides.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .preload.enter .preload-glyph {
+    animation: swirl 2.4s linear infinite;
+  }
+  /* The wordmark prints once and then stays — a word re-printing on every turn
+     would read as a glitch rather than as progress. */
+  .preload.enter .preload-word {
+    animation: preload-print 700ms cubic-bezier(0.3, 0.7, 0.3, 1) both;
+  }
+}
+@keyframes swirl {
+  to { transform: rotate(360deg); }
+}
+/* Reduced motion removes the ROTATION, not the mark. The logo is complete and
+   legible standing still; it never needed the movement to be readable. */
+@media (prefers-reduced-motion: reduce) {
+  .logo-glyph { animation: none; }
+}
+
+/* --------------------------------------------------------------- arrival
+   The mark animates on a page load and on every route change; see
+   components/logo.tsx for which plays when and why the element is keyed.
+
+   The sweep is a pseudo element, which means the mask clips it to the
+   letterforms — a band of brand blue travels THROUGH the wordmark rather than
+   across a rectangle around it. Brand blue rather than a white sheen because
+   white is invisible against the light ink of the dark theme. */
+.logo-print,
+.logo-press {
+  position: relative;
+  /* Keeps the sweep inside the mark rather than letting it paint over the nav
+     beside it. */
+  overflow: hidden;
+}
+
+@keyframes logo-print {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes logo-sweep {
+  from {
+    transform: translateX(-130%);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  to {
+    transform: translateX(230%);
+    opacity: 0;
+  }
+}
+
+@keyframes logo-press {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  38% {
+    transform: translateY(1px) scale(0.955);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+.logo-print {
+  animation: logo-print 560ms cubic-bezier(0.22, 0.81, 0.24, 1) both;
+}
+
+.logo-print::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 32%,
+    var(--primary) 50%,
+    transparent 68%
+  );
+  animation: logo-sweep 820ms cubic-bezier(0.3, 0.7, 0.3, 1) 140ms both;
+}
+
+/* Springs slightly past 1 on the way back, which is what makes a key feel
+   pressed rather than squashed. */
+.logo-press {
+  animation: logo-press 300ms cubic-bezier(0.34, 1.5, 0.64, 1) both;
+}
+
+/*
+ * Motion here is decoration, so it goes away entirely when it is not wanted —
+ * `animation: none` rather than a shortened duration, since the mark is legible
+ * in its final state and never needed the movement to be readable.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .logo-print,
+  .logo-press {
+    animation: none;
+  }
+
+  .logo-print::after {
+    content: none;
+  }
+}
+
+/*
+ * If mask-image is unsupported the element would be a solid currentColor block —
+ * far worse than no logo. @supports keeps it invisible unless masking actually works,
+ * and the aria-label still names the app for assistive tech either way.
+ */
+@supports not ((-webkit-mask-image: url('/logo.png')) or (mask-image: url('/logo.png'))) {
+  .logo {
+    background-color: transparent;
+  }
+}
+
+/* ==========================================================================
+   Package limits manager (admin)
+   ==========================================================================
+   One panel per package, expanded one at a time, with limits grouped under the
+   comparison rows they belong to. The flat table this replaced listed all ~73
+   limits at once, which is not how anyone edits them — you work on one package
+   at a time, and every add started by picking that package again by hand.
+   ========================================================================== */
+
+.pl-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pl-package {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.pl-package.open {
+  border-color: var(--primary-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.pl-package-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px 10px 4px;
+}
+
+.pl-package-toggle {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.pl-package-toggle:hover {
+  background: var(--card-alt);
+}
+
+.pl-chevron {
+  flex-shrink: 0;
+  color: var(--fg-subtle);
+  transition: transform 0.15s var(--ease, ease);
+}
+
+.pl-package.open .pl-chevron {
+  transform: rotate(90deg);
+  color: var(--primary);
+}
+
+.pl-package-name {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pl-package-price {
+  font-size: 13px;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+  /* Takes the slack so the count badge sits beside the Add button. */
+  margin-right: auto;
+}
+
+/*
+ * Multi-column, not grid.
+ *
+ * The nine comparison rows are wildly uneven — "Blocks Project" holds one line and
+ * "Usage Limits" holds ten — and a grid stretches every cell in a row to the tallest
+ * of them, leaving two thirds of the panel as blank card. Columns pack each group at
+ * its natural height and flow the next one underneath, which is the behaviour this
+ * content wants and the one grid cannot express without masonry.
+ */
+.pl-package-body {
+  columns: 330px 3;
+  column-gap: 10px;
+  padding: 4px 14px 16px;
+}
+
+.pl-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 11px 13px;
+  background: var(--card-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  /* Never split a comparison row across a column break — half its limits appearing
+     at the bottom of one column and half at the top of the next is unreadable. */
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  /* Multi-column children need explicit bottom spacing; column-gap is horizontal only. */
+  margin-bottom: 10px;
+}
+
+/* An empty row is still shown — seeing that Scale has nothing under Bandwidth is
+   the reason to open this screen — but it recedes. */
+.pl-group.empty {
+  background: transparent;
+  border-style: dashed;
+}
+
+.pl-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pl-group-name {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-subtle);
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.pl-add-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  padding: 3px 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--fg-muted);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pl-add-inline:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.pl-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+
+.pl-limits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pl-limit {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.pl-limit-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.pl-limit-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+  overflow-wrap: break-word;
+}
+
+.pl-limit-label em {
+  font-weight: 400;
+  color: var(--fg-subtle);
+}
+
+.pl-limit-feature {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--fg-subtle);
+}
+
+.pl-limit-value {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+.pl-limit-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.icon-btn.danger:hover {
+  color: var(--danger);
+}
+
+/* -------------------------------------------------------------- editor dialog */
+
+.pl-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 12, 20, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.pl-dialog {
+  width: 100%;
+  max-width: 660px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+
+.pl-dialog-head {
+  padding: 18px 22px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pl-dialog-head h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.pl-dialog-head p {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+.pl-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 22px;
+  overflow-y: auto;
+}
+
+.pl-dialog-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 22px;
+  border-top: 1px solid var(--border);
+}
+
+.pl-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding-top: 22px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pl-check small {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+
+@media (max-width: 640px) {
+  .pl-package-head {
+    flex-wrap: wrap;
+  }
+  .pl-package-body {
+    columns: 1;
+    padding-inline: 10px;
+  }
+}
+
+/* ------------------------------------------------- wide-screen estimate lines */
+
+/*
+ * Line cards flow into columns once there is room for two. A single column on a
+ * 1600px screen spreads each four-cell breakdown across the full width — the
+ * figures end up so far apart they stop reading as one row — and puts the fifth
+ * feature below the fold when it would comfortably fit beside the first.
+ */
+/*
+ * The line-card grid.
+ *
+ * Three things here are load-bearing, and each was a real defect before:
+ *
+ *  1. NO `align-items: start`. That property was opting every card out of the grid's
+ *     default `stretch`, so each card sized to its own content and the bottom edges in a
+ *     row never met. Stretch is the whole reason to use a grid here.
+ *
+ *  2. `minmax(340px, 1fr)` — but the CARD carries `min-width: 0`. A `1fr` track resolves
+ *     as `minmax(auto, 1fr)`, so its floor is the content's min-content width: one long
+ *     unbreakable feature name could make its column wider than its neighbours and skew
+ *     the whole row. `min-width: 0` on the item lets the track ignore content and stay
+ *     exactly as wide as its siblings.
+ *
+ *  3. `auto-fill`, not `auto-fit`. auto-fit collapses the empty tracks at the end of the
+ *     last row and stretches the surviving cards across the full width, so a row with one
+ *     card gets one enormous card. auto-fill keeps the empty position empty, which is what
+ *     a grid of equal cards should do.
+ */
+.calc-group-lines {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  /* One value: horizontal and vertical gaps are identical by construction. */
+  gap: 12px;
+}
+
+/* ---------------------------------------------------- narrow-phone header
+
+   At 360–430px the header runs out of room: brand + two nav items + three
+   currency codes + theme + sign-in do not fit, and the row pushed the page into
+   horizontal scroll. Everything here sheds width without losing a destination —
+   labels go, icons and accessible names stay. */
+
+@media (max-width: 560px) {
+  .public-header-inner {
+    gap: 8px;
+    min-height: 56px;
+  }
+  /* The button label goes; aria-label on the control keeps its name. */
+  .btn-label {
+    display: none;
+  }
+  .public-header-actions {
+    gap: 5px;
+  }
+  .fx-switch-item {
+    padding: 5px 5px;
+    font-size: 10.5px;
+    letter-spacing: 0;
+  }
+  .public-nav-item {
+    padding: 7px 6px;
+  }
+  .public-nav {
+    gap: 0;
+  }
+}
+
+/* ==========================================================================
+   Cost estimate document
+   ==========================================================================
+   A quotation, not an invoice — nothing here has been bought. Shown as an
+   on-screen preview first, because printing straight from a button gives you a
+   page you only see once the print dialog is open, which is the wrong moment to
+   notice the "prepared for" field is blank.
+   ========================================================================== */
+
+.quote-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  overflow-y: auto;
+  padding: 24px 16px 48px;
+  background: rgba(8, 12, 20, 0.6);
+  backdrop-filter: blur(2px);
+}
+
+.quote-shell {
+  width: 100%;
+  /* A4 is 210mm; this is that plus the document's own margins, so what you see on
+     screen is the shape that comes out of the printer. */
+  max-width: 860px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* One row: the "prepared for" field and every action side by side.
+   //
+   Adding a fourth button was enough to tip this into wrapping — the field took a whole line
+   and the buttons dropped underneath, reading as two unrelated toolbars. The fix is the
+   field's MINIMUM, not the wrap rule: at 200px it could not share the row, and at 150px it
+   can. Wrapping is deliberately left on, so a genuinely narrow viewport still stacks instead
+   of overflowing — and `nowrap` was worse, since it let the input collapse to nothing rather
+   than break. */
+.quote-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.quote-bar-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* Small enough to sit beside all four actions in the 860px shell, wide enough to still be a
+     usable text input. Raising it back toward 200px reintroduces the stacked bar. */
+  flex: 1 1 150px;
+  min-width: 150px;
+}
+
+.quote-bar-field label {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--fg-subtle);
+}
+
+.quote-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  /* Never squeezed: these are the reason the bar exists, and a half-width button with a
+     clipped label is worse than a narrower text input beside it. */
+  flex-shrink: 0;
+}
+
+.quote-bar-actions .btn {
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- the document
+
+   Fixed to a light palette regardless of the app theme. A quote printed from dark
+   mode would otherwise come out as white text on paper, and the on-screen preview
+   has to be the same artefact as the print or it is not a preview. */
+
+.quote-doc {
+  --fg: #1b2021;
+  --fg-muted: #475569;
+  --fg-subtle: #7b7c7f;
+  --border: #d8dee7;
+  color: #1b2021;
+  background: #ffffff;
+  border-radius: var(--radius);
+  padding: 40px 44px;
+  font-size: 13px;
+  line-height: 1.55;
+  box-shadow: var(--shadow-lg);
+}
+
+.quote-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding-bottom: 22px;
+  border-bottom: 2px solid #1b2021;
+}
+
+.quote-logo {
+  display: block;
+  height: 38px;
+  width: auto;
+}
+
+.quote-issuer {
+  margin: 12px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.quote-issuer-detail {
+  margin: 1px 0 0;
+  font-size: 12px;
+  color: var(--fg-muted);
+  white-space: pre-line;
+}
+
+.quote-head-meta {
+  text-align: right;
+  min-width: 240px;
+}
+
+.quote-head-meta h1 {
+  margin: 0 0 10px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.quote-head-meta dl {
+  margin: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.quote-head-meta dl > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.quote-head-meta dt {
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+
+.quote-head-meta dd {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  min-width: 130px;
+  text-align: right;
+}
+
+/* ------------------------------------------------------------------- line table */
+
+.quote-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 24px;
+  font-size: 12px;
+}
+
+.quote-table th {
+  text-align: left;
+  padding: 8px 8px 8px 0;
+  border-bottom: 1px solid #1b2021;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-muted);
+}
+
+.quote-table td {
+  padding: 8px 8px 8px 0;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+/*
+ * The global `.num` puts figures in the mono face, which is right for a dense admin
+ * table and wrong for a document that goes to a client — it reads as a terminal
+ * dump. Inter's tabular figures align just as well and belong on a quotation, so
+ * the document takes the sans back.
+ */
+.quote-table .num,
+.quote-totals td.num,
+.quote-head-meta dd {
+  font-family: var(--sans);
+  font-size: inherit;
+}
+
+.quote-table .num {
+  text-align: right;
+  padding-right: 0;
+  padding-left: 8px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.quote-table .strong {
+  font-weight: 700;
+}
+
+/* Flagged rows are marked with an asterisk AND explained below the table — the
+   tint is never the only thing carrying the meaning, which matters most of all on
+   a page that may be printed in black and white. */
+.quote-table tr.flagged td {
+  background: #fffbeb;
+}
+
+.quote-mark {
+  font-weight: 700;
+  color: #b45309;
+}
+
+/* --------------------------------------------------------------------- totals */
+
+.quote-totals {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.quote-totals table {
+  border-collapse: collapse;
+  min-width: 300px;
+}
+
+.quote-totals td {
+  padding: 5px 0;
+  font-size: 12.5px;
+}
+
+.quote-totals td.num {
+  text-align: right;
+  padding-left: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.quote-totals tr.grand td {
+  padding-top: 10px;
+  border-top: 2px solid #1b2021;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+/* ------------------------------------------------------------ caveats and notes */
+
+.quote-flagged,
+.quote-notes {
+  margin-top: 26px;
+}
+
+.quote-flagged h2,
+.quote-notes h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.quote-flagged {
+  padding: 14px 16px;
+  background: #fffbeb;
+  border: 1px solid #f0d9a8;
+  border-radius: var(--radius-sm);
+}
+
+.quote-flagged h2 {
+  color: #b45309;
+}
+
+.quote-flagged p {
+  margin: 0 0 8px;
+  font-size: 12px;
+}
+
+.quote-flagged ul,
+.quote-notes ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+
+.quote-flagged li,
+.quote-notes li {
+  margin-bottom: 3px;
+}
+
+.quote-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 30px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--fg-subtle);
+}
+
+@media (max-width: 640px) {
+  .quote-doc {
+    padding: 24px 20px;
+  }
+  .quote-head-meta {
+    text-align: left;
+    min-width: 0;
+  }
+  .quote-head-meta dl > div {
+    justify-content: flex-start;
+  }
+  .quote-head-meta dd {
+    text-align: left;
+    min-width: 0;
+  }
+}
+
+/* ==========================================================================
+   Printing the document
+   ==========================================================================
+   When the dialog is open, the document IS the page. Rather than hiding the app
+   piece by piece — which breaks the moment a new section is added — the whole
+   body is hidden and the document alone is made visible again, then lifted out of
+   the modal's fixed/scrolling ancestors so it can paginate normally.
+   ========================================================================== */
+
+@media print {
+  /*
+   * The dialog is portalled to document.body, so it is a SIBLING of the app rather than a
+   * descendant — which makes this one selector enough: hide every top-level child except the
+   * quote. Hiding the app by class instead would take the document with it, because the
+   * dialog is mounted from inside the calculator page.
+   */
+  body > *:not(.quote-backdrop) {
+    display: none !important;
+  }
+
+  .quote-backdrop {
+    display: block !important;
+    position: static;
+    padding: 0;
+    background: none;
+    backdrop-filter: none;
+    overflow: visible;
+  }
+
+  .quote-shell {
+    max-width: none;
+    display: block;
+    gap: 0;
+  }
+
+  .quote-doc {
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font-size: 10.5pt;
+  }
+
+  /* The flagged tint and the header rules are meaning, not decoration, so they are
+     worth asking the browser to keep. Everything still reads without them. */
+  .quote-table tr.flagged td,
+  .quote-flagged {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .quote-table thead {
+    display: table-header-group;
+  }
+
+  .quote-table tr,
+  .quote-flagged,
+  .quote-notes,
+  .quote-totals {
+    break-inside: avoid;
+  }
+
+  @page {
+    size: A4;
+    margin: 16mm 14mm;
+  }
+}
+
+/* ------------------------------------------- narrow header, with two switchers
+
+   Adding the language switcher alongside the currency one tipped the 390px header
+   into horizontal scroll: logo + two nav icons + 2 language codes + 3 currency
+   codes + theme + sign-in came to about 364px of content in 358px of space.
+
+   Nothing is hidden to fix it. A visitor who cannot reach the language switch has
+   no way to read the page, and one who cannot reach the currency switch cannot
+   read the prices — so both stay, and the space comes from the logo and the
+   padding instead. */
+
+@media (max-width: 560px) {
+  /* Below this the actions cannot hold one row either, so they are allowed to wrap among
+     themselves rather than overflow the dialog. */
+  .quote-bar-actions {
+    flex-wrap: wrap;
+  }
+
+  /* !important because <Logo> sets its box as an inline style, which CSS cannot
+     otherwise override. The ratio is the artwork's own (2.7816). */
+  .public-brand .logo {
+    height: 24px !important;
+    width: 67px !important;
+  }
+
+  .fx-switch-item {
+    padding: 5px 4px;
+    font-size: 10px;
+  }
+
+  .public-header-actions {
+    gap: 4px;
+  }
+
+  .public-header-inner {
+    gap: 6px;
+  }
+}
+
+/* Below this the two switchers cannot both sit on the brand row, so the header
+   wraps to two lines rather than scrolling sideways. */
+@media (max-width: 380px) {
+  .public-header-inner {
+    flex-wrap: wrap;
+    padding-block: 8px;
+    row-gap: 6px;
+  }
+  .public-header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+/* ------------------------------------------------- currency select
+
+   Replaces the segmented three-button control. Three codes as buttons cost about
+   110px of a phone header that already carries a logo, two nav items, the language
+   switch, a theme toggle and sign-in — and that cost grows with every currency an
+   admin adds. A select is one fixed-width control however long the list gets. */
+
+.fx-select-wrap {
+  display: inline-flex;
+  align-items: center;
+}
+
+.fx-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 6px 24px 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--fg);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  /* The chevron is a background image so the control keeps a native <select>'s
+     keyboard and touch behaviour while matching the rest of the header. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%237b7c7f' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.fx-select:hover {
+  border-color: var(--border-strong);
+}
+
+.fx-select:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+/* Visible to screen readers, not on screen. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------ send-by-email row */
+
+.quote-mail {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: var(--card);
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.quote-mail label {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--fg-subtle);
+}
+
+.quote-mail .input {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Takes the room the recipient input used to, so the button stays at the right-hand end
+   rather than sitting against the text. */
+.quote-mail-lead {
+  flex: 1;
+  min-width: 200px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg);
+}
+
+.quote-mail-lead strong {
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.quote-mail-error {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--danger);
+}
+
+.quote-mail-hint {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+
+/* Pending-activation mark. A waiting state, not an error — hence the neutral accent rather
+   than the danger colour, which would read as "something went wrong". */
+.pending-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: 0 0 14px;
+  border-radius: 50%;
+  color: var(--primary);
+  background: var(--primary-soft, rgba(0, 102, 178, 0.12));
+}
+
+/* Separates the Microsoft button from the Blocks one on the login page. */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+  color: var(--fg-subtle);
+  font-size: 12px;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ------------------------------------------------------- Microsoft button
+
+   Neutral, not brand blue.
+
+   The Microsoft mark is four saturated squares — red, green, blue, yellow — and
+   sitting them on the SELISE blue put two blues next to each other and made the
+   whole control fight itself. Microsoft's own brand guidance for a sign-in button
+   is a neutral surface with a thin border and dark text, which is also what keeps
+   it clearly secondary to whatever the page's real primary action is.
+
+   The dark theme uses a raised surface rather than pure white, so the button does
+   not glare on a near-black page. */
+
+.btn.btn-microsoft {
+  background: #ffffff;
+  color: #3c4043;
+  border: 1px solid #8c8c8c;
+  font-weight: 600;
+  gap: 10px;
+}
+
+.btn.btn-microsoft:hover:not(:disabled) {
+  background: #f5f5f5;
+  border-color: #5e5e5e;
+}
+
+.btn.btn-microsoft:active:not(:disabled) {
+  background: #ececec;
+}
+
+:root[data-theme='dark'] .btn.btn-microsoft {
+  background: #2f2f2f;
+  color: #ffffff;
+  border-color: #5e5e5e;
+}
+
+:root[data-theme='dark'] .btn.btn-microsoft:hover:not(:disabled) {
+  background: #3b3b3b;
+  border-color: #8c8c8c;
+}
+
+/* ------------------------------------------------------------ saved estimates */
+
+.est-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.est-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.est-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 180px;
+}
+
+.est-name {
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+.est-meta {
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+
+.est-figures {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.est-total {
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.est-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ==========================================================================
+   On-premises deployment
+   ==========================================================================
+   A separate block below the packages, not a card among them: the commercial
+   shape is different (a one-off charge plus monthly maintenance, on the
+   customer's own infrastructure), and standing it next to three monthly
+   subscriptions invites a price comparison that does not mean anything.
+   ========================================================================== */
+
+.pkg-onprem {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(280px, 1.4fr) auto;
+  gap: 18px 26px;
+  align-items: center;
+  margin-top: 22px;
+  padding: 20px 22px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.pkg-onprem-head strong {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 5px;
+}
+
+.pkg-onprem-head p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+
+.pkg-onprem-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 7px;
+}
+
+.pkg-onprem-list li {
+  display: grid;
+  /* Label column fixed so the details start on one edge; a ragged left margin on
+     four short lines reads as a mistake rather than a list. */
+  grid-template-columns: 150px 1fr;
+  gap: 12px;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.pkg-onprem-label {
+  color: var(--fg-subtle);
+}
+
+.pkg-onprem-detail {
+  color: var(--fg);
+}
+
+@media (max-width: 860px) {
+  .pkg-onprem {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .pkg-onprem-list li {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
+
+/* ==========================================================================
+   "Loaded from package" banner (calculator)
+   ==========================================================================
+   Sits above the total and names the package plus its SUBSCRIPTION fee, kept
+   visually separate from the usage total below it. The two are equal on arrival
+   by construction and diverge the moment a quantity changes; showing them as one
+   number would hide that, and adding them together would be simply wrong.
+   ========================================================================== */
+
+.calc-from-package {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  background: var(--primary-soft, rgba(0, 102, 178, 0.10));
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius);
+}
+
+.calc-from-package-main {
+  flex: 1;
+  min-width: 150px;
+}
+
+.calc-from-package-main strong,
+.calc-from-package-fee strong {
+  display: block;
+  font-size: 14px;
+}
+
+.calc-from-package-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--fg-subtle);
+}
+
+.calc-from-package-fee {
+  text-align: right;
+}
+
+/* ==========================================================================
+   Selectable package cards
+   ==========================================================================
+   The whole card is the control. A card that looks clickable but only responds
+   on one small button inside it teaches people to hunt for the hit area, so the
+   content sits inside a <button> filling the card — which also means the keyboard
+   works without role/tabIndex/onKeyDown bolted onto a div.
+
+   The two actions live OUTSIDE that button: a link nested inside a button is
+   invalid markup and browsers disagree about which one a click activates.
+   ========================================================================== */
+
+.pkg-card-hit {
+  /* Unstyled button: it exists for the hit area and the keyboard, not the paint. */
+  appearance: none;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pkg-card-hit:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+/* Selection is a border and a lift, not a colour wash: the recommended ribbon already
+   uses accent colour, and two accents competing on one card reads as a bug. */
+.pkg-card.selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary), var(--shadow);
+}
+
+.pkg-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+/* The actions appear on selection, so the card grows. Animating the reveal stops the
+   grid from jumping under the cursor that caused it. */
+@media (prefers-reduced-motion: no-preference) {
+  .pkg-actions {
+    animation: pkg-actions-in 140ms ease-out;
+  }
+  @keyframes pkg-actions-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+}
+
+/* Cards in a row stay the same height whichever one is selected, so revealing the
+   actions does not make one card taller than its neighbours. */
+.pkg-grid {
+  align-items: stretch;
+}
+
+.pkg-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.pkg-card .pkg-actions {
+  margin-top: auto;
+}
+
+/* System key and allowance on the features-at-a-glance card. The key is monospace and
+   muted so it never competes with the display name above it — the point of the card is
+   that a friendly name and a technical key are visibly different kinds of thing. */
+.derived-key {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10.5px;
+  color: var(--fg-subtle);
+  overflow-wrap: anywhere;
+}
+
+.derived-allowance {
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
+/* ==========================================================================
+   Sticky summary: full card at rest, compact bar while scrolling
+   ==========================================================================
+   At the top of the page the card is worth its space — the per-service
+   breakdown is the second thing a buyer looks at. Once someone is scrolling
+   through line cards they want one number, and a tall panel following them down
+   the page reads as clutter covering the thing they are editing.
+
+   The total never moves between states. Only the detail collapses, so the
+   number a reader is tracking stays exactly where their eye already is.
+   ========================================================================== */
+
+.calc-summary {
+  /* Transition the box, not `height`: an auto height cannot be animated, and the detail
+     block below handles its own collapse. */
+  transition:
+    padding 160ms ease,
+    gap 160ms ease,
+    box-shadow 160ms ease;
+}
+
+/* Collapsed with grid rows, not max-height.
+   //
+   `max-height: 1200px -> 0` animates a number, not the content: with a 200px block, nothing
+   moves for the first 165ms and then it snaps, which reads as a glitch rather than a collapse.
+   `1fr -> 0fr` animates the row to the content's actual size, so the motion is proportional
+   however tall the detail happens to be. */
+.calc-summary-detail-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 200ms ease;
+}
+
+.calc-summary-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  opacity: 1;
+  overflow: hidden;
+  transition: opacity 140ms ease;
+}
+
+.calc-summary.compact {
+  /* A bar, not a panel. */
+  gap: 0;
+  padding: 10px 16px;
+  box-shadow: var(--shadow);
+}
+
+.calc-summary.compact .calc-summary-detail-wrap {
+  grid-template-rows: 0fr;
+}
+
+.calc-summary.compact .calc-summary-detail {
+  opacity: 0;
+  /* Not display:none — that cannot transition, and it also drops the block from the
+     accessibility tree abruptly rather than after the collapse. */
+  pointer-events: none;
+}
+
+/* One line: label left, total right. */
+.calc-summary.compact .calc-summary-total {
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+
+.calc-summary.compact .calc-summary-label {
+  font-size: 12.5px;
+  /* The label is the part that gives way when the bar is narrow; the number never truncates. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calc-summary.compact .calc-summary-value {
+  font-size: 20px;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .calc-summary.compact {
+    padding: 8px 12px;
+  }
+  .calc-summary.compact .calc-summary-value {
+    font-size: 17px;
+  }
+  .calc-summary.compact .calc-summary-label {
+    font-size: 11.5px;
+  }
+}
+
+/* Someone who has asked for less motion still gets the collapse — it is the point — but
+   without the animation carrying it. */
+@media (prefers-reduced-motion: reduce) {
+  .calc-summary,
+  .calc-summary-detail {
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------ incidents */
+
+/*
+ * Severity chip. P1/P2 arrive filled and iconed, P3/P4 quiet — the difference is FORM, so it
+ * survives greyscale and colour-blindness rather than relying on hue alone.
+ */
+.sev-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.sev-chip.sm {
+  font-size: 11px;
+  padding: 1px 6px;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.55;
+  white-space: nowrap;
+  border: 1px solid var(--border-strong);
+  color: var(--fg-muted);
+  background: var(--card-alt);
+}
+.status-pill.status-proposed {
+  border-style: dashed;
+  color: var(--warning);
+}
+.status-pill.status-new,
+.status-pill.status-ack,
+.status-pill.status-inv {
+  color: var(--primary);
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+}
+.status-pill.status-mit,
+.status-pill.status-res {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 40%, transparent);
+  background: var(--success-bg);
+}
+.status-pill.status-closed {
+  opacity: 0.75;
+}
+.status-pill.status-dismissed {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* SLA: a bar carries the magnitude, the word carries the verdict. */
+.sla {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+.sla-track {
+  display: inline-block;
+  width: 46px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--card-alt);
+  overflow: hidden;
+}
+.sla-fill {
+  display: block;
+  height: 100%;
+  background: var(--fg-subtle);
+}
+.sla-ontrack .sla-fill { background: var(--success); }
+.sla-approaching .sla-fill { background: var(--warning); }
+.sla-approaching { color: var(--warning); }
+.sla-breached .sla-fill { background: var(--danger); }
+.sla-breached { color: var(--danger); font-weight: 600; }
+
+.fg-subtle { color: var(--fg-subtle); }
+
+/* Detail-page metadata grid. */
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 16px 24px;
+}
+.meta-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  margin-bottom: 3px;
+}
+.meta-value {
+  font-size: 13.5px;
+  color: var(--fg);
+  /*
+   * Fingerprints and correlation keys are colon-delimited identifiers with no
+   * spaces ("uptimerobot:GRAFANASELISEBIZAS:availability"), so there is no break
+   * opportunity for the browser to find and the value overflowed its ~170px grid
+   * cell and was clipped. `anywhere` lets it wrap mid-token; the grid item needs
+   * min-width:0 too, because a grid item's automatic minimum is its content and
+   * that alone would keep the column stretched instead of wrapping.
+   */
+  overflow-wrap: anywhere;
+}
+.meta-grid > .meta {
+  min-width: 0;
+}
+
+/* Timeline. The rail is a border on the list, so entries cannot drift out of alignment. */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 22px;
+  border-left: 2px solid var(--border);
+}
+.timeline li {
+  position: relative;
+  padding: 0 0 18px 0;
+}
+.timeline li:last-child { padding-bottom: 0; }
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: -29px;
+  top: 5px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 2px solid var(--border-strong);
+}
+.timeline li.tl-workflow::before { border-color: var(--primary); background: var(--primary); }
+.timeline li.tl-client::before { border-color: var(--success); }
+.tl-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13.5px;
+}
+.tl-when { font-size: 12px; color: var(--fg-subtle); font-variant-numeric: tabular-nums; }
+.tl-change {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-top: 3px;
+  font-family: var(--mono, ui-monospace, monospace);
+}
+.tl-tag {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0 5px;
+}
+
+/* Raw provider payload, beside the normalised signal. */
+.raw-payload {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--card-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+  overflow-x: auto;
+  white-space: pre;
+  max-height: 260px;
+}
+
+/* The severity table is the dashboard centrepiece — give its figures room. */
+.sev-table td, .sev-table th { font-variant-numeric: tabular-nums; }
+.sev-table tbody td:first-child { width: 96px; }
+
+/* Sidebar brand: the glyph beside the product name, since the artwork's own
+   wordmark is unreadable at this size. */
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.brand-lockup .brand-name {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.brand-lockup .sub {
+  font-size: 11px;
+  color: var(--fg-subtle);
+  line-height: 1.3;
+}
+/* Collapsed to icons, only the mark survives. */
+.sidebar.collapsed .brand-lockup > div:last-child {
+  display: none;
+}
+
+/* The register's title column absorbs the leftover width and truncates rather than
+   pushing Status, SLA and Started out of the visible table. */
+.col-title {
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* "Incident Management" does not fit the sidebar on one line at 14px. */
+.brand-lockup .brand-name {
+  font-size: 13px;
+  white-space: normal;
+}
+
+/* Multi-value reference editor. A checklist, not a <select multiple> — see the
+   note in master-table.tsx. */
+.checklist {
+  display: grid;
+  gap: 6px;
+  max-height: 190px;
+  overflow-y: auto;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+}
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* Sub-navigation for the master-data tabs. */
+.subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+.subnav a {
+  padding: 8px 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--fg-muted);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.subnav a:hover { color: var(--fg); }
+.subnav a.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+/* ------------------------------------------------------------ dashboard charts
+
+   Colour is chosen last and validated, not eyeballed. The trend pair is blue
+   against green: it passes at ΔE 20.8 (protan) on light and 21.4 (deutan) on
+   dark, where blue/violet failed at 2.5 and blue/teal failed the chroma floor.
+   Its one weakness is tritanopia (ΔE 3.8), which is why opened also carries an
+   area fill and resolved does not — identity never rests on hue alone. */
+
+:root {
+  --chart-opened: #0066b2;
+  --chart-resolved: #15803d;
+}
+:root[data-theme='dark'] {
+  /* Stepped separately, not flipped: the app's own --success (#4ade80) sits at
+     L 0.80 and blows the lightness band on the navy card. */
+  --chart-opened: #2a8fd8;
+  --chart-resolved: #34a853;
+}
+
+.chart { display: flex; flex-direction: column; gap: 10px; }
+.chart-plot { position: relative; }
+.chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+.chart-legend { display: flex; gap: 16px; font-size: 12px; color: var(--fg-muted); }
+.chart-legend .lg { display: inline-flex; align-items: center; gap: 6px; }
+.chart-legend .lg::before {
+  content: ""; width: 14px; height: 3px; border-radius: 2px; background: currentColor;
+}
+.lg-opened { color: var(--chart-opened); }
+.lg-resolved { color: var(--chart-resolved); }
+.lg-met { color: var(--success); }
+.lg-breached { color: var(--danger); }
+
+.grid { stroke: var(--border); stroke-width: 1; }
+.axis { fill: var(--fg-subtle); font-size: 10px; }
+.crosshair { stroke: var(--border-strong); stroke-width: 1; stroke-dasharray: 3 3; }
+.hit { cursor: pointer; }
+
+.trend-line { fill: none; stroke-width: 2.25; stroke-linejoin: round; stroke-linecap: round; }
+.trend-opened { stroke: var(--chart-opened); }
+.trend-resolved { stroke: var(--chart-resolved); }
+.trend-area { fill: color-mix(in srgb, var(--chart-opened) 14%, transparent); stroke: none; }
+.dot { stroke: var(--card); stroke-width: 2; }
+.dot-opened { fill: var(--chart-opened); }
+.dot-resolved { fill: var(--chart-resolved); }
+.end-label { font-size: 10px; font-weight: 600; }
+.el-opened { fill: var(--chart-opened); }
+.el-resolved { fill: var(--chart-resolved); }
+
+/* The line draws itself left to right, then the area fades in beneath it.
+   Once, on arrival — nothing here loops. */
+@media (prefers-reduced-motion: no-preference) {
+  .trend-anim .trend-line {
+    stroke-dasharray: 2000;
+    stroke-dashoffset: 2000;
+    animation: trend-draw 600ms ease-out forwards;
+  }
+  .trend-anim .trend-resolved { animation-delay: 90ms; }
+  .trend-anim .trend-area { opacity: 0; animation: fade-in 320ms ease-out 520ms forwards; }
+}
+@keyframes trend-draw { to { stroke-dashoffset: 0; } }
+@keyframes fade-in { to { opacity: 1; } }
+
+/* SLA compliance: 100% stacked, one row per severity. */
+.sla-row, .age-row, .mvt-row {
+  display: grid;
+  grid-template-columns: 46px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 0;
+}
+.sla-row.clickable, .age-row.clickable { cursor: pointer; }
+.sla-row.clickable:hover .sla-bar, .age-row.clickable:hover .age-track { outline: 2px solid var(--primary-border); outline-offset: 2px; }
+.sla-label, .age-label, .mvt-label { font-size: 12.5px; font-weight: 600; color: var(--fg-muted); }
+.age-label, .mvt-label { font-weight: 500; }
+.sla-bar {
+  display: flex;
+  height: 16px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--card-alt);
+  /* A 2px surface gap so the two segments read as two, not as one bar with a
+     colour change somewhere in the middle. */
+  gap: 2px;
+}
+.seg { display: block; height: 100%; }
+.seg-met { background: var(--success); }
+.seg-breached { background: var(--danger); }
+.sla-figure, .age-figure, .mvt-figure {
+  font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.mvt-figure.over { color: var(--danger); font-weight: 600; }
+
+.age-track, .mvt-track {
+  position: relative; height: 16px; border-radius: 4px; background: var(--card-alt); overflow: hidden;
+}
+.age-fill, .mvt-fill { display: block; height: 100%; border-radius: 4px; }
+.mvt-fill { background: var(--primary); }
+.mvt-fill.over { background: var(--danger); }
+.mvt-track { overflow: visible; }
+.mvt-target {
+  position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--fg-subtle);
+}
+
+/* Bars grow from zero, staggered down the rows. */
+@media (prefers-reduced-motion: no-preference) {
+  .seg, .age-fill, .mvt-fill {
+    animation: bar-grow 420ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+    animation-delay: var(--delay, 0ms);
+    transform-origin: left center;
+  }
+}
+@keyframes bar-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.chart-tip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: var(--fg);
+  color: var(--page);
+  font-size: 11.5px;
+  line-height: 1.5;
+  padding: 6px 9px;
+  border-radius: 6px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 5;
+  box-shadow: var(--shadow);
+}
+.chart-tip-head { font-weight: 700; }
+
+/* "By unit" and "By category" must END LEVEL. Each card is its own grid so
+   title, subtitle and body start on the same line, and both render a fixed row
+   count — padding the shorter list rather than letting it stop early. */
+.level-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 900px) { .level-pair { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .grid.pair { grid-template-columns: 1fr; } }
+.level-pair > .card { display: grid; grid-template-rows: auto 1fr; }
+.rank-row {
+  display: grid;
+  grid-template-columns: 1fr 64px 40px;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 13px;
+  min-height: 30px;
+}
+.rank-row.empty { visibility: hidden; }
+.rank-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank-figure { text-align: right; font-variant-numeric: tabular-nums; color: var(--fg-muted); }
+
+/* Role chips: a toggle per assignable role, so granting and revoking are the
+   same gesture and the whole set is visible at once. */
+.role-picker { display: flex; flex-wrap: wrap; gap: 5px; }
+.role-chip {
+  font: inherit;
+  font-size: 11.5px;
+  line-height: 1.5;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+  color: var(--fg-subtle);
+  cursor: pointer;
+}
+.role-chip:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+.role-chip.on {
+  border-style: solid;
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 600;
+}
+.role-chip:disabled { cursor: not-allowed; opacity: 0.55; }
+
+/* ============================================================ design system
+   Card geometry, KPI treatment and chart styling from the supplied design.
+   Written as overrides at the end so the inherited rules stay readable and the
+   change is one block rather than a diff scattered through the file. */
+
+.card {
+  border-radius: 14px;
+  padding: 0;
+  box-shadow: none;
+}
+.card-head {
+  padding: 20px 22px 0;
+  border-bottom: none;
+  display: block;
+}
+.card-title { font-size: 14.5px; font-weight: 600; letter-spacing: -0.005em; }
+.card-sub { display: block; font-size: 12.5px; color: var(--fg-subtle); margin-top: 2px; }
+.card-actions { float: right; margin-top: -22px; }
+.card-body { padding: 18px 22px 22px; }
+.card-body.tight { padding: 14px 0 0; }
+.card-head + .card-body.tight { padding-top: 14px; }
+
+/* KPI: a tinted icon tile, the label beside it, then the figure at display size.
+   The figure is monospaced so a row of five reads as a row. */
+/* Five tiles across, collapsing rather than shrinking below a readable width. */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 1200px) { .stat-row { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 720px) { .stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+}
+.stat-head { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.stat-icon {
+  width: 26px; height: 26px; border-radius: 7px;
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.stat-label { font-size: 12px; color: var(--fg-muted); letter-spacing: 0; text-transform: none; }
+.stat-value {
+  font-family: var(--mono);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+.stat-hint { font-size: 11.5px; color: var(--fg-subtle); margin-top: 6px; min-height: 1.2em; }
+/* A KPI that is a warning wears it: a rule down its leading edge and the figure
+   in the same tone. Reserved for one card, or it stops meaning anything. */
+.stat.critical { border-left: 2.5px solid var(--danger); }
+.stat.critical .stat-value { color: var(--danger); }
+
+/* Tables: thinner rules, quieter headings, figures in mono. */
+.table th {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--fg-subtle);
+  text-transform: none;
+  letter-spacing: 0;
+  border-bottom: 1px solid var(--border);
+}
+.table td { border-bottom: 1px solid var(--row-line, var(--border)); font-size: 13px; }
+.table tbody tr:hover { background: color-mix(in srgb, var(--fg) 3%, transparent); }
+.sev-table td, .table td[style*="right"] { font-family: var(--mono); }
+
+/* Bars: 8px, fully rounded, on a faint track. */
+.bar-track { height: 8px; border-radius: 8px; background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.bar-track > span { border-radius: 8px; background: var(--accent-teal); }
+
+/* Brand for chrome, palette for data. SELISE blue stays load-bearing on primary
+   buttons, the active nav item, the login panel, the logo and the letterhead —
+   a product with no brand colour anywhere could belong to anyone — but the data
+   surfaces belong to teal/indigo/rose/amber. On this ground the blue is the
+   lighter step; #0066B2 goes muddy against #0A0E1A. */
+
+/* Charts adopt the same accents. Opened keeps a strong area fill and resolved a
+   much fainter one — the plan's validator flagged this pair as weak under
+   tritanopia (ΔE 3.8), so the two series differ in WEIGHT as well as hue. */
+:root { --chart-opened: var(--accent-indigo); --chart-resolved: var(--accent-teal); }
+:root[data-theme='dark'] { --chart-opened: #818cf8; --chart-resolved: #5eead4; }
+
+.trend-area { fill: url(#openedFill); }
+.trend-area-resolved { fill: url(#resolvedFill); }
+.grid { stroke: color-mix(in srgb, var(--fg) 8%, transparent); }
+.axis { fill: var(--fg-subtle); font-size: 11.5px; }
+.chart-tip { background: var(--card-raised); color: var(--fg); border: 1px solid var(--border-strong); }
+:root:not([data-theme='dark']) .chart-tip { background: var(--fg); color: var(--page); }
+
+/* No gap between the segments: with `gap` set, met + breached is 100% PLUS the
+   gap, the flex line overflows, and every bar shrinks slightly off its track —
+   which reads as the chart not filling its card. */
+.sla-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 8px;
+  gap: 0;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+}
+.sla-bar .seg { flex-shrink: 0; }
+.seg-met { background: var(--success); }
+.seg-breached { background: var(--danger); }
+/* The design puts the label and the verdict on one line above the bar. */
+.sla-row { grid-template-columns: 1fr; gap: 7px; padding: 10px 0; }
+.sla-row .sla-label { grid-row: 1; font-size: 12.5px; color: var(--fg); }
+.sla-row .sla-figure { grid-row: 1; justify-self: end; margin-top: -22px; }
+.age-track { height: 8px; border-radius: 8px; background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.age-row { grid-template-columns: 62px 1fr 24px; padding: 7px 0; }
+.age-label { font-size: 12px; color: var(--fg-muted); }
+.age-figure { text-align: right; color: var(--fg); }
+.mvt-row { grid-template-columns: 1fr; gap: 8px; padding: 13px 0; }
+.mvt-row .mvt-label { grid-row: 1; font-size: 12.5px; }
+.mvt-row .mvt-figure { grid-row: 1; justify-self: end; margin-top: -20px; color: var(--fg-subtle); }
+.mvt-track { height: 8px; border-radius: 8px; background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.mvt-fill { border-radius: 8px; background: var(--accent-amber); }
+.mvt-fill.over { background: var(--danger); }
+.mvt-target { background: color-mix(in srgb, var(--fg) 45%, transparent); }
+
+/* Severity chips keep their literal label; the dot is reinforcement. */
+.sev-chip { font-family: var(--mono); }
+
+/* --------------------------------------------- dashboard layout, revised
+
+   The trend gets its own full-width row — it is the tallest natural element and
+   squeezing it beside another card wastes the one chart that needs horizontal
+   room. Below it three compact cards of equal height, then the table. */
+
+.dash-row-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 1100px) { .dash-row-3 { grid-template-columns: 1fr; } }
+/* Cards in an equal row must end level, so the grid stretches them and each one
+   is itself a column that can centre its body. */
+.dash-row-3 > .card,
+.level-pair > .card { height: 100%; display: flex; flex-direction: column; }
+.dash-row-3 > .card > .card-body,
+.level-pair > .card > .card-body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+/* Open aging: six tiles. Occupied buckets light up; empty ones recede, so the
+   question "where is the old work" is answered by where the colour is. */
+.aging-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.age-tile {
+  font: inherit;
+  border: 1px solid var(--border);
+  background: transparent;
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+  cursor: default;
+  display: grid;
+  gap: 4px;
+}
+.age-tile.on {
+  border-color: color-mix(in srgb, var(--accent-teal) 30%, transparent);
+  background: color-mix(in srgb, var(--accent-teal) 8%, transparent);
+  cursor: pointer;
+}
+.age-tile.on:hover { border-color: var(--accent-teal); }
+.age-tile-count {
+  font-family: var(--mono);
+  font-size: 17px;
+  font-weight: 700;
+  color: #3e4763;
+}
+.age-tile.on .age-tile-count { color: var(--accent-teal); }
+.age-tile-label { font-size: 10.5px; color: var(--fg-subtle); }
+
+/* MTTA / MTTR */
+.mvt-chart { display: flex; flex-direction: column; gap: 22px; }
+.mvt-item { display: grid; gap: 8px; }
+.mvt-head { display: flex; justify-content: space-between; font-size: 12.5px; }
+.mvt-head .mvt-label { color: var(--fg-muted); }
+.mvt-head .mvt-figure { color: var(--fg-subtle); }
+.mvt-verdict {
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 11.5px;
+  color: var(--fg-caption);
+}
+
+/* Severity as a dot plus its literal label. The label is not optional: the
+   scale is only accessible because every mark carries its own name. */
+.sev-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.sev-cell { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; }
+
+/* By category: ONE stacked bar plus a legend. Separate full-width bars hide a
+   16 / 1 / 1 split — every row looks similar and the shares do not. */
+.cat-stack {
+  display: flex; width: 100%; height: 10px; border-radius: 8px; overflow: hidden;
+  background: color-mix(in srgb, var(--fg) 8%, transparent); margin-bottom: 18px;
+}
+.cat-legend { display: flex; flex-direction: column; gap: 12px; }
+.cat-legend-row { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; }
+.cat-legend-row > span:first-child { display: flex; align-items: center; gap: 8px; color: var(--fg-2); }
+.cat-swatch { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.cat-count { color: var(--fg-muted); }
+.cat-count small { color: var(--fg-caption); }
+
+/* A status pill that takes its colour from the status, as the design has. */
+.status-tint {
+  font-size: 11px; font-weight: 500; padding: 4px 9px; border-radius: 6px; white-space: nowrap;
+}
+/* SLA in a table row: a chip when breached, a bar plus figure when not. */
+.sla-chip {
+  font-size: 11.5px; font-weight: 600; color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  padding: 4px 10px; border-radius: 6px; white-space: nowrap;
+}
+.sla-inline { display: flex; align-items: center; gap: 8px; min-width: 90px; }
+.sla-inline .bar-track { height: 5px; }
+.sla-inline span:last-child { font-size: 11.5px; font-weight: 600; color: var(--accent-amber); }
+
+.page-foot { color: #3e4763; font-size: 11.5px; }
+
+/*
+ * The severity ring proposed in an earlier revision is WITHDRAWN.
+ *
+ * The logo already carries three colours of its own; wrapping a second
+ * three-colour system (the P1-P4 scale) around it would put two competing
+ * palettes on one object. The mark's own three lines rotate instead.
+ */
+
+
+
+/* ------------------------------------------------- notices and the toolbar
+
+   Alerts carry their meaning in an icon and a title, not in a coloured frame.
+   A full green border on a success notice sitting directly above the filter row
+   reads as a green border around the filter row — the two are adjacent and the
+   eye groups them. Tint and icon are enough; the border goes neutral. */
+.alert.success,
+.alert.warning,
+.alert.info,
+.alert.danger {
+  border-color: var(--border);
+}
+
+/* And the filter row's own edge is explicitly neutral, so nothing upstream can
+   tint it. */
+.filter-toolbar {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  margin-bottom: 14px;
+}
+
+/* A generated endpoint: shown with a copy button, never as an editable input. */
+.endpoint-cell { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.endpoint-cell code {
+  font-size: 11.5px;
+  color: var(--fg-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 320px;
+}
