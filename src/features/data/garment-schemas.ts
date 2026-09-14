@@ -131,7 +131,9 @@ const F = {
   Line: "ItemId Name PlantId SupervisorId WorkerCount IsActive",
   SampleVersion: "ItemId StyleId Type VersionNo Status SubmittedAt EvidenceFileIds Notes",
   ApprovalRecord: "ItemId SampleVersionId StyleId Decision ActorId ActorName DecidedAt Note",
-  Issue: "ItemId Title Description Type Severity Status StyleId LineId BuyerId SampleVersionId " +
+  /* CreatedDate is gateway-stamped at insert; without it in the projection every row
+   * arrives with the field undefined, and any "last N days" filter silently empties. */
+  Issue: "ItemId CreatedDate Title Description Type Severity Status StyleId LineId BuyerId SampleVersionId " +
          "OwnerId OwnerName Department DueDate RaisedBy RaisedByName SourceCommentId ClosedAt",
   IssueEvent: "ItemId IssueId Kind ActorId ActorName At Message FromStatus ToStatus EvidenceFileIds",
   BuyerComment: "ItemId StyleId SampleVersionId RawText Channel ReceivedAt ParsedAt ParsedBy",

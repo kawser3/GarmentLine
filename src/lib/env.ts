@@ -20,6 +20,8 @@ interface RuntimeConfig {
   microsoftClientId?: string;
   redirectUri?: string;
   idpUrl?: string;
+  aiModelName?: string;
+  aiModelProvider?: string;
 }
 
 declare global {
@@ -102,6 +104,18 @@ export const env = {
    */
   idpUrl:
     pick(runtime.idpUrl, import.meta.env.VITE_BLOCKS_IDP_URL) ?? "https://iam.seliseblocks.com",
+  /**
+   * The AI service model the buyer-comment parser queries (agents.seliseblocks.com,
+   * /api/ai-agent/query/stream). Defaults are the pair the service accepts from a browser
+   * session: the bedrock-hosted Claude models are listed by /api/agents/models but the
+   * query endpoint rejects the `anthropic_bedrock` provider, so the default is a chat
+   * model on a provider it does accept. Both overridable without a code change.
+   */
+  aiModelName:
+    pick(runtime.aiModelName, import.meta.env.VITE_BLOCKS_AI_MODEL_NAME) ??
+    "deepseek/deepseek-v4-flash-0731",
+  aiModelProvider:
+    pick(runtime.aiModelProvider, import.meta.env.VITE_BLOCKS_AI_MODEL_PROVIDER) ?? "openai",
 } as const;
 
 /** False when sign-in cannot work because no OIDC client is configured for this build. */

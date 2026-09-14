@@ -7,8 +7,9 @@
  *
  * Two engines sit behind one interface:
  *
- *   - "blocks-ai-agent" — the project's Blocks AI agent (see the portal's AI
- *     Agents section). Preferred, and the one the case means by "AI".
+ *   - "blocks-ai-agent" — the Blocks AI service (agents.seliseblocks.com),
+ *     queried with the session token. Preferred, and the one the case means
+ *     by "AI".
  *   - "local-fallback"  — a deterministic Banglish garment lexicon. It exists so
  *     a cold agent (quota, missing onboarding, network) degrades into a slower
  *     demo instead of a dead one. The review table always shows WHICH engine
@@ -36,31 +37,77 @@ export interface ParseResult {
 /* ------------------------------------------------------------------ agent */
 
 /**
- * Query the configured Blocks AI agent.
+ * Query the Blocks AI service (agents.seliseblocks.com).
  *
- * The endpoint is the portal's own (/blocksai-api/v1/ai-agent/query); the agent
- * id comes from VITE_BLOCKS_AI_AGENT_ID once the agent exists. Failures are
- * thrown to the caller — the UI decides whether to fall back, and says so.
+ * The query endpoint answers over SSE, not a JSON body: lifecycle events stream first
+ * (start, context, workflow_*, task_*) and the answer arrives as a `chat_response` event
+ * whose payload carries the message. A `chat_error` event is a failure like a 4xx — the
+ * catch in parseBuyerComment turns either into the fallback with an honest note.
+ *
+ * The model is addressed directly (model_name + model_provider from env) with the parsing
+ * instructions as base context — no portal agent needs to exist for this to answer.
  */
 async function queryBlocksAgent(prompt: string, signal?: AbortSignal): Promise<string> {
-  const agentId = (import.meta.env.VITE_BLOCKS_AI_AGENT_ID ?? "").trim();
-  if (!agentId) throw new Error("No VITE_BLOCKS_AI_AGENT_ID configured");
   const token = getAccessToken();
-  const res = await fetch(`${env.apiUrl}/blocksai-api/v1/ai-agent/query`, {
+  if (!token) throw new Error("No session token for the AI service");
+  const res = await fetch(`${env.apiUrl}/agents-api/ai-agent/query/stream`, {
     method: "POST",
     signal,
     headers: {
       "Content-Type": "application/json",
       "x-blocks-key": env.projectKey,
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ agentId, query: prompt, stream: false }),
+    body: JSON.stringify({
+      query: prompt,
+      call_from: "api",
+      model_name: env.aiModelName,
+      model_provider: env.aiModelProvider,
+      response_type: "text",
+    }),
   });
   if (!res.ok) {
     throw new Error(`Blocks AI agent ${res.status}: ${(await res.text()).slice(0, 200)}`);
   }
-  const data = (await res.json()) as { response?: string; output?: string; answer?: string };
-  return data.response ?? data.output ?? data.answer ?? JSON.stringify(data);
+  if (!res.body) throw new Error("Blocks AI agent returned no stream");
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let answer: string | null = null;
+
+  const handleBlock = (block: string) => {
+    const lines = block.split("\n");
+    const ev = lines.find((l) => l.startsWith("event: "))?.slice(7).trim();
+    const raw = lines.find((l) => l.startsWith("data: "))?.slice(6);
+    if (!ev || !raw) return;
+    let payload: Record<string, unknown>;
+    try {
+      payload = JSON.parse(raw) as Record<string, unknown>;
+    } catch {
+      return;
+    }
+    if (ev === "chat_response") answer = typeof payload.message === "string" ? payload.message : null;
+    if (ev === "chat_error") {
+      throw new Error(
+        `AI service: ${String(payload.error ?? payload.message ?? "processing failed")}`,
+      );
+    }
+  };
+
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    for (;;) {
+      const sep = buffer.indexOf("\n\n");
+      if (sep === -1) break;
+      handleBlock(buffer.slice(0, sep));
+      buffer = buffer.slice(sep + 2);
+    }
+  }
+  if (answer == null) throw new Error("AI service stream ended without an answer");
+  return answer;
 }
 
 /** Pull the first JSON array out of an agent reply, however it is wrapped. */

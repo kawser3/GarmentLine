@@ -48,7 +48,7 @@ Demo accounts (password `GarmentLine#2026`): `nusrat.garmentline@example.com`
 | **IDP / OIDC** | browser sign-in via the platform client (PKCE), session bootstrap |
 | **Logic · Mail** | buyer notice on approve/reject — template `GarmentLineSampleDecision`, sent *after* the record stands; failure never rolls back a decision |
 | **Logic · Notifier** | in-app notification to GM + merchandisers on a decision, and to the GM when a repeat pattern is first detected |
-| **AI Agents** | Banglish comment → structured action list (`blocksai-api/v1/ai-agent/query`), with an honest fallback parser when the agent is unreachable — the badge in the UI always says which engine produced the list |
+| **AI Agents** | Banglish comment → structured action list via the AI service (`agents.seliseblocks.com`, `/api/ai-agent/query/stream`, session-token auth, SSE), with an honest fallback parser when the service is unreachable — the badge in the UI always says which engine produced the list |
 | **Localization / LMT** | full EN + বাংলা UI, bundled dictionary first-paint + service overlay |
 | **Release** | build + deploy from the Blocks CLI |
 

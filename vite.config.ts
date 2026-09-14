@@ -126,6 +126,26 @@ export default defineConfig(({ mode }) => {
         },
       };
     }
+
+    /*
+     * The AI service is its own host (agents.seliseblocks.com), not a prefix on the API
+     * gateway. Same-origin proxying for the same reason as above: the session token is
+     * sent as a header, but a cross-site call would still need CORS the service does not
+     * advertise. `/agents-api/ai-agent/…` becomes `/api/ai-agent/…` on the target.
+     */
+    const agentsTarget =
+      env.VITE_BLOCKS_AGENTS_TARGET?.trim() || "https://agents.seliseblocks.com";
+    proxy["/agents-api"] = {
+      target: agentsTarget,
+      changeOrigin: true,
+      secure: true,
+      rewrite: (p) => p.replace(/^\/agents-api/, "/api"),
+      configure: (proxyServer) => {
+        proxyServer.on("error", (err, req) => {
+          console.error(`[proxy] ${req.method} ${req.url} -> ${agentsTarget} failed: ${err.message}`);
+        });
+      },
+    };
   }
 
   /*
