@@ -97,8 +97,10 @@
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 
-  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --mono: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace;
+  /* Noto Sans Bengali sits ahead of the generics so বাংলা strings render in a
+     matched face when the OS has it, instead of a misfit last-resort fallback. */
+  --sans: 'Inter', 'Noto Sans Bengali', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', 'Noto Sans Bengali', 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace;
 
   color-scheme: light;
 }
@@ -967,6 +969,15 @@ h3 {
 
 .grid.one {
   grid-template-columns: 1fr;
+}
+
+/* A responsive pair of tracks for FORM controls (channel + version selects), not
+   cards: narrower than .grid.pair's 440px minimum because two selects fit in
+   half a laptop screen; collapses to one column under 640px. */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 12px;
 }
 /*
  * A fixed pair of columns, for a row that holds exactly two cards. The outer grid is

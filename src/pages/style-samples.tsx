@@ -142,7 +142,7 @@ export function StyleSamplesPage() {
   }
 
   return (
-    <>
+    <div className="grid one">
       <Card
         span
         title={`${style.StyleCode} — ${style.Name}`}
@@ -170,7 +170,7 @@ export function StyleSamplesPage() {
           <Empty title="No sample versions recorded for this style" />
         ) : (
           <TableWrap>
-            <table>
+
               <thead>
                 <tr>
                   <th>Version</th><th>Submitted</th><th>Standing decision</th>
@@ -229,8 +229,7 @@ export function StyleSamplesPage() {
                   );
                 })}
               </tbody>
-            </table>
-          </TableWrap>
+            </TableWrap>
         )}
         {mayApprove && (
           <Field label="Note to attach to the next decision">
@@ -245,6 +244,6 @@ export function StyleSamplesPage() {
       </Card>
 
       <BuyerCommentsPanel styleId={styleId} buyerId={style.BuyerId} />
-    </>
+    </div>
   );
 }

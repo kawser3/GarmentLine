@@ -22,7 +22,7 @@ import { IssuesPage } from "@/pages/issues";
 import { IssueDetailPage } from "@/pages/issue-detail";
 import { SamplesPage } from "@/pages/samples";
 import { StyleSamplesPage } from "@/pages/style-samples";
-import { BuyersPage, LinesPage, MasterDataLayout, StylesPage } from "@/pages/master-data";
+import { BuyersPage, LinesPage, StylesPage } from "@/pages/master-data";
 import { UsersPage } from "@/pages/users";
 import { useI18nOverlay, useI18nStore } from "@/features/i18n/i18n";
 import { ROLES } from "@/stores/auth";
@@ -32,10 +32,10 @@ import { ROLES } from "@/stores/auth";
  * a merchandiser gets the same aggregates for the buyers they own, which is what
  * makes the view useful before it reaches the GM's desk.
  */
-const MANAGEMENT_ROLES = [ROLES.admin, ROLES.gm, ROLES.merchandiser];
+const MANAGEMENT_ROLES = [ROLES.superadmin, ROLES.admin, ROLES.gm, ROLES.merchandiser];
 
 /** Master data: buyers, styles, lines. Reshaping the organisation, not reading it. */
-const MASTER_ROLES = [ROLES.admin, ROLES.gm, ROLES.merchandiser];
+const MASTER_ROLES = [ROLES.superadmin, ROLES.admin, ROLES.gm, ROLES.merchandiser];
 
 /**
  * People. Admin and the factory manager only.
@@ -44,7 +44,7 @@ const MASTER_ROLES = [ROLES.admin, ROLES.gm, ROLES.merchandiser];
  * approved, and still cannot create an account. Authority over the product and
  * authority over access are separate, and this is where that line is drawn.
  */
-const PEOPLE_ROLES = [ROLES.admin, ROLES.gm];
+const PEOPLE_ROLES = [ROLES.superadmin, ROLES.admin, ROLES.gm];
 
 export default function App() {
   useSessionBootstrap();
@@ -104,19 +104,31 @@ export default function App() {
               }
             />
 
-            <Route
-              path="/master"
-              element={
-                <RequireRole any={MASTER_ROLES}>
-                  <MasterDataLayout />
-                </RequireRole>
-              }
-            >
-              <Route index element={<Navigate to="/master/buyers" replace />} />
-              <Route path="buyers" element={<BuyersPage />} />
-              <Route path="styles" element={<StylesPage />} />
-              <Route path="lines" element={<LinesPage />} />
-            </Route>
+            {/*
+              Master data: one route per table, each guarded on its own. These were
+              nested under /master behind a tab strip; the sidebar now links each
+              directly, and a tab bar inside a page the nav already points at is a
+              second navigation for the same destinations.
+            */}
+            {(
+              [
+                ["/buyers", <BuyersPage />],
+                ["/styles", <StylesPage />],
+                ["/lines", <LinesPage />],
+              ] as const
+            ).map(([path, element]) => (
+              <Route
+                key={path}
+                path={path}
+                element={<RequireRole any={MASTER_ROLES}>{element}</RequireRole>}
+              />
+            ))}
+
+            {/* The old nested paths, so anything already linked still lands. */}
+            <Route path="/master" element={<Navigate to="/buyers" replace />} />
+            <Route path="/master/buyers" element={<Navigate to="/buyers" replace />} />
+            <Route path="/master/styles" element={<Navigate to="/styles" replace />} />
+            <Route path="/master/lines" element={<Navigate to="/lines" replace />} />
 
             <Route
               path="/people"

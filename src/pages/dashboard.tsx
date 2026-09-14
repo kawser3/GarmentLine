@@ -1,13 +1,14 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Badge, Card, Empty, ErrorAlert, Loading, Stat, TableWrap } from "@/components/ui";
+import { PageHead } from "@/components/layout";
 import {
   OPEN_STATUSES, buyers, costAssumptions, issues as issuesCrud,
   linesCrud, repeatAlerts, stylesCrud,
 } from "@/features/data/garment-schemas";
 import { visibleIssues } from "@/features/issues/scope";
 import { canSeeCostImpact, useAuthStore } from "@/stores/auth";
-import { useI18nStore } from "@/features/i18n/i18n";
+import { useI18nStore, useT } from "@/features/i18n/i18n";
 import { formatDate } from "@/lib/format";
 
 /** Rank a map of label -> count, biggest first. */
@@ -36,6 +37,7 @@ function tally<T>(rows: T[], key: (r: T) => string | undefined): Map<string, num
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const locale = useI18nStore((s) => s.locale);
+  const t = useT();
 
   const all = issuesCrud.useAll();
   const styles = stylesCrud.useAll();
@@ -87,29 +89,33 @@ export function DashboardPage() {
 
   return (
     <>
-      <Card span title="This month" sub="Trailing 30 days, scoped to what you can see.">
-        <div className="stats">
-          <Stat label="Open issues" value={String(open.length)}
-            hint={`${recent.length} raised in the last 30 days`} />
-          <Stat label="Worst buyer" value={worstBuyer?.[0] ?? "—"}
-            hint={worstBuyer ? `${worstBuyer[1]} issues` : "no issues this month"} />
-          <Stat label="Worst line" value={worstLine?.[0] ?? "—"}
-            hint={worstLine ? `${worstLine[1]} issues` : "no issues this month"} />
-          <Stat label="Worst issue type" value={worstType?.[0] ?? "—"}
-            hint={worstType ? `${worstType[1]} occurrences` : "no issues this month"} />
-        </div>
-      </Card>
+      <PageHead
+        title={t("nav.dashboard")}
+        description={t("page.dashboard.desc")}
+      />
+      <div className="grid">
+        <Card span title={t("page.dashboard.card")} sub={t("page.dashboard.cardSub")}>
+          <div className="stats">
+            <Stat label="Open issues" value={String(open.length)}
+              hint={`${recent.length} raised in the last 30 days`} />
+            <Stat label="Worst buyer" value={worstBuyer?.[0] ?? "—"}
+              hint={worstBuyer ? `${worstBuyer[1]} issues` : "no issues this month"} />
+            <Stat label="Worst line" value={worstLine?.[0] ?? "—"}
+              hint={worstLine ? `${worstLine[1]} issues` : "no issues this month"} />
+            <Stat label="Worst issue type" value={worstType?.[0] ?? "—"}
+              hint={worstType ? `${worstType[1]} occurrences` : "no issues this month"} />
+          </div>
+        </Card>
 
-      {live.length > 0 && (
-        <Card
-          span
-          title="Repeat-defect warnings"
-          sub="Raised on the second occurrence, before a third confirms the pattern."
-        >
-          <TableWrap>
-            <table>
+        {live.length > 0 && (
+          <Card
+            span
+            title={t("page.dashboard.repeat")}
+            sub={t("page.dashboard.repeatSub")}
+          >
+            <TableWrap>
               <thead>
-                <tr><th>Line</th><th>Defect</th><th>Occurrences</th><th>Window</th><th>Detected</th><th>Evidence</th></tr>
+                <tr><th>{t("col.line")}</th><th>{t("col.defect")}</th><th>{t("col.occurrences")}</th><th>{t("col.window")}</th><th>{t("col.detected")}</th><th>{t("col.evidence")}</th></tr>
               </thead>
               <tbody>
                 {live.map((a) => (
@@ -130,66 +136,66 @@ export function DashboardPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </TableWrap>
-          {live.map((a) => <p key={a.ItemId} className="muted">{a.Message}</p>)}
+            </TableWrap>
+            {live.map((a) => <p key={a.ItemId} className="muted">{a.Message}</p>)}
+          </Card>
+        )}
+
+        <Card title={t("page.dashboard.byLine")} sub={t("page.dashboard.last30")}>
+          {byLine.size === 0 ? <Empty title={t("empty.nothingThisMonth")} /> : (
+            <ul className="plain">
+              {rank(byLine).map(([label, n]) => (
+                <li key={label}><strong>{label}</strong> — {n}</li>
+              ))}
+            </ul>
+          )}
         </Card>
-      )}
 
-      <Card title="Issues by line" sub="Last 30 days">
-        {byLine.size === 0 ? <Empty title="Nothing this month" /> : (
-          <ul className="plain">
-            {rank(byLine).map(([label, n]) => (
-              <li key={label}><strong>{label}</strong> — {n}</li>
-            ))}
-          </ul>
-        )}
-      </Card>
-
-      <Card title="Issues by buyer" sub="Last 30 days">
-        {byBuyer.size === 0 ? <Empty title="Nothing this month" /> : (
-          <ul className="plain">
-            {rank(byBuyer).map(([label, n]) => (
-              <li key={label}><strong>{label}</strong> — {n}</li>
-            ))}
-          </ul>
-        )}
-      </Card>
-
-      <Card title="Issues by type" sub="Last 30 days">
-        {byType.size === 0 ? <Empty title="Nothing this month" /> : (
-          <ul className="plain">
-            {rank(byType).map(([label, n]) => (
-              <li key={label}><strong>{label}</strong> — {n}</li>
-            ))}
-          </ul>
-        )}
-      </Card>
-
-      {canSeeCostImpact(user) && (
-        <Card
-          span
-          title="Cost exposure"
-          sub="From the seeded cost assumptions — no figure is hard-coded in the app."
-        >
-          <div className="stats">
-            <Stat label="Styles with open issues" value={String(atRisk.length)} />
-            <Stat label="Units at risk" value={unitsAtRisk.toLocaleString()} hint="pieces across those styles" />
-            <Stat
-              label="Chargeback exposure"
-              value={`${minPct}–${maxPct}%`}
-              hint="of order value, per the buyer contracts"
-              tone="neg"
-            />
-          </div>
-          <p className="muted">
-            Air freight runs {cost.get("AirFreightPerKg") ?? "—"} USD/kg against{" "}
-            {cost.get("SeaFreightPerKg") ?? "—"} by sea. Rework clears about{" "}
-            {cost.get("ReworkPiecesPerHour") ?? "—"} pieces per hour per line, so a defect
-            found late is a shipment decision, not a floor decision.
-          </p>
+        <Card title={t("page.dashboard.byBuyer")} sub={t("page.dashboard.last30")}>
+          {byBuyer.size === 0 ? <Empty title={t("empty.nothingThisMonth")} /> : (
+            <ul className="plain">
+              {rank(byBuyer).map(([label, n]) => (
+                <li key={label}><strong>{label}</strong> — {n}</li>
+              ))}
+            </ul>
+          )}
         </Card>
-      )}
+
+        <Card title={t("page.dashboard.byType")} sub={t("page.dashboard.last30")}>
+          {byType.size === 0 ? <Empty title={t("empty.nothingThisMonth")} /> : (
+            <ul className="plain">
+              {rank(byType).map(([label, n]) => (
+                <li key={label}><strong>{label}</strong> — {n}</li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        {canSeeCostImpact(user) && (
+          <Card
+            span
+            title={t("page.dashboard.cost")}
+            sub={t("page.dashboard.costSub")}
+          >
+            <div className="stats">
+              <Stat label="Styles with open issues" value={String(atRisk.length)} />
+              <Stat label="Units at risk" value={unitsAtRisk.toLocaleString()} hint="pieces across those styles" />
+              <Stat
+                label="Chargeback exposure"
+                value={`${minPct}–${maxPct}%`}
+                hint="of order value, per the buyer contracts"
+                tone="neg"
+              />
+            </div>
+            <p className="muted">
+              Air freight runs {cost.get("AirFreightPerKg") ?? "—"} USD/kg against{" "}
+              {cost.get("SeaFreightPerKg") ?? "—"} by sea. Rework clears about{" "}
+              {cost.get("ReworkPiecesPerHour") ?? "—"} pieces per hour per line, so a defect
+              found late is a shipment decision, not a floor decision.
+            </p>
+          </Card>
+        )}
+      </div>
     </>
   );
 }

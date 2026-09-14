@@ -1,6 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import {
+  Briefcase,
+  Factory,
   KeyRound,
   LayoutDashboard,
   ListFilter,
@@ -9,7 +11,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ClipboardCheck,
-  Settings2,
+  Shirt,
   Users,
 } from "lucide-react";
 import {
@@ -20,6 +22,7 @@ import {
   rolesOf,
   useAuthStore,
 } from "@/stores/auth";
+import { ThemeToggle } from "@/components/theme";
 import { useUiStore } from "@/stores/ui";
 import { LanguageSwitcher, useT } from "@/features/i18n/i18n";
 import type { DictKey } from "@/features/i18n/dictionary";
@@ -59,8 +62,13 @@ const NAV: { group: DictKey; items: NavItem[] }[] = [
   {
     group: "nav.group.configuration",
     items: [
+      /* One destination per master table. These were a tab strip inside a single
+       * "Master data" page; the sidebar already navigates, so the tabs were a second
+       * navigation for the same three places. */
+      { to: "/buyers", label: "nav.buyers", icon: Briefcase, internal: true, master: true },
+      { to: "/styles", label: "nav.styles", icon: Shirt, internal: true, master: true },
+      { to: "/lines", label: "nav.lines", icon: Factory, internal: true, master: true },
       { to: "/people", label: "nav.people", icon: Users, internal: true, people: true },
-      { to: "/master", label: "nav.master", icon: Settings2, internal: true, master: true },
     ],
   },
 ];
@@ -275,8 +283,9 @@ export function AppLayout() {
 
           <div className="toolbar-spacer" />
 
-          {/* The one shell control that is not navigation — language belongs to the
-              person, not the route. */}
+          {/* The two shell controls that are not navigation — language and theme
+              belong to the person, not the route. */}
+          <ThemeToggle />
           <LanguageSwitcher />
         </header>
 

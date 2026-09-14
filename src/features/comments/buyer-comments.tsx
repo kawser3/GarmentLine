@@ -254,7 +254,7 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
             <span className="muted">{engineNote}</span>
           </p>
           <TableWrap>
-            <table>
+
               <thead>
                 <tr>
                   <th>#</th><th>Action (editable)</th><th>Part</th><th>Dept</th>
@@ -322,8 +322,7 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </TableWrap>
+            </TableWrap>
           <p className="muted">
             Nothing above exists as an issue yet. Accepting a row raises it through the normal
             path — owner, due date, and the repeat-defect rule included.
@@ -337,7 +336,7 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
           <Empty title="No buyer comments recorded for this style" />
         ) : (
           <TableWrap>
-            <table>
+
               <thead>
                 <tr><th>Received</th><th>Channel</th><th>Comment</th><th>Parsed</th></tr>
               </thead>
@@ -364,8 +363,7 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
                   );
                 })}
               </tbody>
-            </table>
-          </TableWrap>
+            </TableWrap>
         )}
         {decidedItems.length > 0 && activeComment ? (
           <p className="muted">

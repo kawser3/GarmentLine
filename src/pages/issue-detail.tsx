@@ -107,9 +107,8 @@ export function IssueDetailPage() {
   }
 
   return (
-    <>
+    <div className="grid one">
       <Card
-        span
         title={issue.Title}
         sub={`${issue.Type} · ${issue.Severity} · raised by ${issue.RaisedByName || "unknown"}`}
         actions={<Link to="/issues"><Button variant="quiet" size="sm">Back to issues</Button></Link>}
@@ -127,7 +126,6 @@ export function IssueDetailPage() {
       </Card>
 
       <Card
-        span
         title="History"
         sub="Append-only. Entries can be added, never edited or deleted."
       >
@@ -186,6 +184,6 @@ export function IssueDetailPage() {
           )}
         </div>
       </Card>
-    </>
+    </div>
   );
 }

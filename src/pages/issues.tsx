@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Badge, Card, ErrorAlert, Empty, Loading, TableWrap } from "@/components/ui";
+import { PageHead } from "@/components/layout";
 import { FilterToolbar, useRowFilter } from "@/components/table-toolbar";
 import {
   ISSUE_TYPES, SEVERITIES, STATUSES, STATUS_LABEL,
@@ -9,7 +10,7 @@ import {
 } from "@/features/data/garment-schemas";
 import { visibleIssues } from "@/features/issues/scope";
 import { useAuthStore } from "@/stores/auth";
-import { useI18nStore } from "@/features/i18n/i18n";
+import { useI18nStore, useT } from "@/features/i18n/i18n";
 import { formatDate } from "@/lib/format";
 
 const SEVERITY_TONE: Record<Severity, "danger" | "warning" | "info" | undefined> = {
@@ -25,6 +26,7 @@ const STATUS_TONE: Partial<Record<Status, "success" | "warning" | "danger" | "in
 export function IssuesPage() {
   const user = useAuthStore((s) => s.user);
   const locale = useI18nStore((s) => s.locale);
+  const t = useT();
   const all = issuesCrud.useAll();
   const styles = stylesCrud.useAll();
   const lines = linesCrud.useAll();
@@ -64,41 +66,43 @@ export function IssuesPage() {
     (a, b) => new Date(b.CreatedDate ?? 0).getTime() - new Date(a.CreatedDate ?? 0).getTime());
 
   return (
-    <Card
-      span
-      title="Issues"
-      sub="Sample comments and production defects, in the order they were raised."
-    >
-      <FilterToolbar filter={filter} filters={FILTERS} />
-      {rows.length === 0 ? (
-        <Empty title="No issues match">Clear the filters to see the whole register.</Empty>
-      ) : (
-        <TableWrap>
-          <table>
-            <thead>
-              <tr>
-                <th>Issue</th><th>Style</th><th>Buyer</th><th>Line</th>
-                <th>Type</th><th>Severity</th><th>Status</th><th>Owner</th><th>Due</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((i) => (
-                <tr key={i.ItemId}>
-                  <td><Link to={`/issues/${i.ItemId}`}>{i.Title}</Link></td>
-                  <td>{styleName.get(i.StyleId) ?? "—"}</td>
-                  <td>{buyerName.get(i.BuyerId) ?? "—"}</td>
-                  <td>{lineName.get(i.LineId) ?? "—"}</td>
-                  <td>{i.Type}</td>
-                  <td><Badge tone={SEVERITY_TONE[i.Severity]}>{i.Severity}</Badge></td>
-                  <td><Badge tone={STATUS_TONE[i.Status]}>{STATUS_LABEL[i.Status]}</Badge></td>
-                  <td>{i.OwnerName || "—"}</td>
-                  <td>{i.DueDate ? formatDate(i.DueDate, locale) : "—"}</td>
+    <>
+      <PageHead
+        title={t("nav.issues")}
+        description={t("page.issues.desc")}
+      />
+      <div className="grid one">
+        <Card title={t("page.issues.card")} sub={t("page.issues.cardSub")}>
+          <FilterToolbar filter={filter} filters={FILTERS} />
+          {rows.length === 0 ? (
+            <Empty title={t("empty.noIssues")}>{t("empty.noIssuesHint")}</Empty>
+          ) : (
+            <TableWrap>
+              <thead>
+                <tr>
+                  <th>{t("col.issue")}</th><th>{t("col.style")}</th><th>{t("col.buyer")}</th><th>{t("col.line")}</th>
+                  <th>{t("col.type")}</th><th>{t("col.severity")}</th><th>{t("col.status")}</th><th>{t("col.owner")}</th><th>{t("col.due")}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </TableWrap>
-      )}
-    </Card>
+              </thead>
+              <tbody>
+                {rows.map((i) => (
+                  <tr key={i.ItemId}>
+                    <td><Link to={`/issues/${i.ItemId}`}>{i.Title}</Link></td>
+                    <td>{styleName.get(i.StyleId) ?? "—"}</td>
+                    <td>{buyerName.get(i.BuyerId) ?? "—"}</td>
+                    <td>{lineName.get(i.LineId) ?? "—"}</td>
+                    <td>{i.Type}</td>
+                    <td><Badge tone={SEVERITY_TONE[i.Severity]}>{i.Severity}</Badge></td>
+                    <td><Badge tone={STATUS_TONE[i.Status]}>{STATUS_LABEL[i.Status]}</Badge></td>
+                    <td>{i.OwnerName || "—"}</td>
+                    <td>{i.DueDate ? formatDate(i.DueDate, locale) : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </TableWrap>
+          )}
+        </Card>
+      </div>
+    </>
   );
 }

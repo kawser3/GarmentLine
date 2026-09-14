@@ -7,20 +7,23 @@ type Theme = "dark" | "light";
 const STORAGE_KEY = "blocks-incident.theme";
 
 /**
- * The product is DARK-ONLY for now (PLAN §07).
+ * Dark-first, with the light palette one click away.
  *
- * The surfaces in the design system — #0A0E1A behind everything, #121729 for
- * panels, hairline borders at 9% — have no validated light counterpart, and
- * inventing one by inversion is how you end up with a second theme that looks
- * wrong everywhere. So light is on the roadmap rather than half-present.
+ * The design system was drawn dark (#0A0E1A ground, #121729 panels, hairline
+ * borders) — that stays the default. Both token sets live in index.css and both
+ * are maintained; the palette switches on the data-theme attribute, so one write
+ * flips the whole app. The choice persists per browser.
  *
- * The light tokens are still in index.css and still correct; nothing selects
- * them. Restoring the switch is re-exposing the toggle, not rebuilding a theme.
- *
- * The exception is the report PDF, which is always paper — white ground, dark
- * ink — and has its own palette in features/reports. It never reads this.
+ * The report PDF is always paper — white ground, dark ink — and has its own
+ * palette in features/reports. It never reads this.
  */
 function readInitial(): Theme {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === "light" || saved === "dark") return saved;
+  } catch {
+    /* Storage blocked — fall through to the default. */
+  }
   return "dark";
 }
 
@@ -42,9 +45,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme]);
 
-  // Kept so every consumer of useTheme() still type-checks while the product is
-  // dark-only. Nothing renders a control that calls it.
-  const toggle = useCallback(() => setTheme("dark"), []);
+  const toggle = useCallback(() => setTheme((t) => (t === "dark" ? "light" : "dark")), []);
 
   return <ThemeContext.Provider value={{ theme, toggle }}>{children}</ThemeContext.Provider>;
 }
