@@ -70,6 +70,14 @@ export const enUS = {
   "auth.role.holds": "You hold",
   "auth.role.holdsNone": "no roles",
   "auth.role.startPage": "Go to your start page",
+
+  "role.superadmin": "Super Administrator",
+  "role.admin": "Administrator",
+  "role.factory-manager": "Factory Manager",
+  "role.merchandiser": "Merchandiser",
+  "role.line-supervisor": "Line Supervisor",
+  "role.qa-inspector": "QA Inspector",
+  "role.buyer": "Buyer",
 } as const;
 
 export type Dict = Record<keyof typeof enUS, string>;
@@ -121,6 +129,14 @@ export const bnBD: Dict = {
   "auth.role.holds": "আপনার আছে",
   "auth.role.holdsNone": "কোনো রোল নেই",
   "auth.role.startPage": "আপনার শুরুর পেজে যান",
+
+  "role.superadmin": "সুপার অ্যাডমিনিস্ট্রেটর",
+  "role.admin": "অ্যাডমিনিস্ট্রেটর",
+  "role.factory-manager": "ফ্যাক্টরি ম্যানেজার",
+  "role.merchandiser": "মার্চেন্ডাইজার",
+  "role.line-supervisor": "লাইন সুপারভাইজার",
+  "role.qa-inspector": "কিউএ ইন্সপেক্টর",
+  "role.buyer": "বায়ার",
 };
 
 export const LOCALES = ["en-US", "bn-BD"] as const;

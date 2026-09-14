@@ -21,7 +21,6 @@ import {
   useAuthStore,
 } from "@/stores/auth";
 import { useUiStore } from "@/stores/ui";
-import { AnimatedLogo } from "@/components/logo";
 import { LanguageSwitcher, useT } from "@/features/i18n/i18n";
 import type { DictKey } from "@/features/i18n/dictionary";
 import { cx, initials } from "@/lib/utils";
@@ -29,9 +28,9 @@ import { cx, initials } from "@/lib/utils";
 /**
  * The application shell.
  *
- * Three destinations, in the order the work happens: what is happening now (dashboard), the
- * record of everything (incidents), and the raw feed behind it (signals). A Client sees only
- * the register, so the nav is filtered by role rather than rendering links that refuse.
+ * Four destinations, in the order the work happens: what needs attention now (dashboard), the
+ * issue log, the sample approvals behind it, and the factory setup. A Buyer sees only
+ * their report, so the nav is filtered by role rather than rendering links that refuse.
  */
 interface NavItem {
   to: string;
@@ -67,18 +66,17 @@ const NAV: { group: DictKey; items: NavItem[] }[] = [
 ];
 
 /**
- * The sidebar mark.
- *
- * The glyph, not the full lockup: at this size the lockup's three lines of type and its
- * strapline are illegible, and the words are already beside it.
+ * The sidebar mark: the product name, set in text. No image mark and no motion —
+ * the sidebar is furniture, not a hero.
  */
 export function Brand({ size = "md" }: { size?: "md" | "lg" }) {
   return (
     <div className="brand-lockup">
-      {/* One turn on arrival, then still — see components/logo.tsx. */}
-      <AnimatedLogo height={size === "lg" ? 32 : 26} wordmark={false} />
+      {/* The collapsed icon rail keeps a two-letter monogram — an empty header
+          row reads as a broken layout rather than a choice. */}
+      <span className="brand-mono" aria-hidden>GL</span>
       <div>
-        <div className="brand-name">GarmentLine</div>
+        <div className={size === "lg" ? "brand-name brand-name-lg" : "brand-name"}>GarmentLine</div>
         <div className="sub">SELISE Blocks</div>
       </div>
     </div>

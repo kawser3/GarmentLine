@@ -141,16 +141,16 @@ export function Preloader() {
   if (!visible) return null;
 
   /*
-   * The same two images the boot overlay in index.html uses, so the React
+   * The same treatment the boot overlay in index.html uses, so the React
    * transition and the pre-bundle overlay are visibly one thing rather than two
-   * loaders that happen to look similar. The bar is gone: the mark assembling
-   * itself already says "loading", and a second progress element says it twice.
+   * loaders that happen to look similar: the product name, and a single thin
+   * indeterminate bar as the only motion.
    */
   return (
     <div className="preload enter" role="status" aria-label="Loading…">
       <span className="preload-mark">
-        <img className="preload-glyph" src="/logo-glyph.png" alt="" width={52} height={52} />
-        <img className="preload-word" src="/logo-wordmark.png" alt="" width={84} height={52} />
+        <span className="preload-name">GarmentLine</span>
+        <span className="preload-bar" aria-hidden />
       </span>
     </div>
   );
