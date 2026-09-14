@@ -42,7 +42,7 @@ Demo accounts (password `GarmentLine#2026`): `nusrat.garmentline@example.com`
 
 | Service | Where it earns its place |
 |---|---|
-| **Data Gateway** | 11 schemas (`Style`, `SampleVersion`, `ApprovalRecord`, `Issue`, `IssueEvent`, `BuyerComment`, `ActionItem`, `RepeatAlert`, `Buyer`, `Line`, `CostAssumption`) with typed CRUD + access policies |
+| **Data Gateway** | 11 schemas (`Style`, `SampleVersion`, `ApprovalRecord`, `Issue`, `IssueEvent`, `BuyerComment`, `ActionItem`, `RepeatAlert`, `Buyer`, `Line`, `CostAssumption`) with typed CRUD over one GraphQL endpoint |
 | **Storage** | provisioned, with `EvidenceFileIds` carried on issues and sample versions; the upload UI is not built yet (see Limits) |
 | **IAM** | roles, permissions (`garmentline::*`), role-scoped visibility, demo users |
 | **IDP / OIDC** | browser sign-in via the platform client (PKCE), session bootstrap |
@@ -102,11 +102,6 @@ Run in order after the project exists (`node scripts/NN-….mjs`); all are idemp
    our delivery date?* → worst buyer/line/type, cost exposure, drill-through to
    the rows behind every number.
 
----
-
-Built for the SELISE Blocks hackathon, 2026-09-14. Solo entry by Kawser Harun
-(`harun.kawser@selisegroup.com`).
-
 ## Limits — what is not built
 
 Stated plainly, because a reviewer will find these anyway and a README that
@@ -128,3 +123,8 @@ oversells is worse than one that is short.
 - **The people register is read-only.** Accounts and roles are provisioned by
   `scripts/03-roles-users.mjs`. This is deliberate for the demo, not an
   oversight, but it does mean the GM cannot invite anyone from inside the app.
+
+---
+
+Built for the SELISE Blocks hackathon, 2026-09-14. Solo entry by Kawser Harun
+(`harun.kawser@selisegroup.com`).
