@@ -1027,7 +1027,13 @@ h3 {
   margin-bottom: 0;
 }
 /* Nested inside the outer grid, the pair takes the whole row for itself. */
-.grid > .grid.pair {
+/*
+ * A grid nested inside a grid is a ROW of the outer one, never a cell in it.
+ * Without this it is placed in a single auto-fit column — so a three-card row
+ * dropped into `.grid` rendered at a third of the page with the right two
+ * thirds empty, which is exactly what it looked like.
+ */
+.grid > .grid {
   grid-column: 1 / -1;
 }
 /* A card can opt out of the grid and span every column. */
