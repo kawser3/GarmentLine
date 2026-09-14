@@ -36,6 +36,7 @@ export function rolesOf(user: BlocksUser | null | undefined): string[] {
  * unauthorised) rather than open, but it fails silently, so the two lists live side by side.
  */
 export const ROLES = {
+  superadmin: "superadmin",
   admin: "admin",
   gm: "factory-manager",
   merchandiser: "merchandiser",
@@ -48,6 +49,7 @@ export type RoleSlug = (typeof ROLES)[keyof typeof ROLES];
 
 /** Human labels, for the sidebar and the role chip. */
 export const ROLE_LABELS: Record<string, string> = {
+  [ROLES.superadmin]: "Super Administrator",
   [ROLES.admin]: "Administrator",
   [ROLES.gm]: "Factory Manager",
   [ROLES.merchandiser]: "Merchandiser",
@@ -71,27 +73,27 @@ export function hasRole(user: BlocksUser | null | undefined, ...any: RoleSlug[])
  * These gate the UI. IAM holds the same model as permissions server-side; this is the
  * visible half, not the enforcement.
  */
-const { admin: AD, gm: GM, merchandiser: MD, supervisor: SUP, qa: QA } = ROLES;
+const { superadmin: SA, admin: AD, gm: GM, merchandiser: MD, supervisor: SUP, qa: QA } = ROLES;
 
 /** Everyone who works inside the factory. A Buyer holds none of these. */
 export function isInternal(user: BlocksUser | null | undefined): boolean {
-  return hasRole(user, AD, GM, MD, SUP, QA);
+  return hasRole(user, SA, AD, GM, MD, SUP, QA);
 }
 
 /* -- platform ------------------------------------------------------------- */
-export const canManagePlatform = (u: BlocksUser | null | undefined) => hasRole(u, AD);
-export const canManagePeople = (u: BlocksUser | null | undefined) => hasRole(u, AD, GM);
-export const canManageMasterData = (u: BlocksUser | null | undefined) => hasRole(u, AD, GM, MD);
+export const canManagePlatform = (u: BlocksUser | null | undefined) => hasRole(u, SA, AD);
+export const canManagePeople = (u: BlocksUser | null | undefined) => hasRole(u, SA, AD, GM);
+export const canManageMasterData = (u: BlocksUser | null | undefined) => hasRole(u, SA, AD, GM, MD);
 
 /* -- issue lifecycle ------------------------------------------------------ */
-export const canRaiseIssue = (u: BlocksUser | null | undefined) => hasRole(u, AD, GM, MD, SUP, QA);
+export const canRaiseIssue = (u: BlocksUser | null | undefined) => hasRole(u, SA, AD, GM, MD, SUP, QA);
 export const canEditIssue = canRaiseIssue;
-export const canAssign = (u: BlocksUser | null | undefined) => hasRole(u, AD, GM, MD);
+export const canAssign = (u: BlocksUser | null | undefined) => hasRole(u, SA, AD, GM, MD);
 /** Recording that a correction was made is the supervisor's half of the loop. */
-export const canRecordCorrection = (u: BlocksUser | null | undefined) => hasRole(u, AD, GM, MD, SUP, QA);
+export const canRecordCorrection = (u: BlocksUser | null | undefined) => hasRole(u, SA, AD, GM, MD, SUP, QA);
 /** Verification is QA's call, per the brief's lifecycle. */
-export const canVerifyIssue = (u: BlocksUser | null | undefined) => hasRole(u, AD, GM, QA);
-export const canCloseIssue = (u: BlocksUser | null | undefined) => hasRole(u, AD, GM, MD);
+export const canVerifyIssue = (u: BlocksUser | null | undefined) => hasRole(u, SA, AD, GM, QA);
+export const canCloseIssue = (u: BlocksUser | null | undefined) => hasRole(u, SA, AD, GM, MD);
 
 /*
  * The one the brief singles out: "Only authorized people can mark a sample 'approved' -
@@ -101,19 +103,19 @@ export const canCloseIssue = (u: BlocksUser | null | undefined) => hasRole(u, AD
  * start bulk against a version the buyer never signed off, which is the failure the whole
  * product exists to prevent.
  */
-export const canApproveSample = (u: BlocksUser | null | undefined) => hasRole(u, AD, GM, MD);
+export const canApproveSample = (u: BlocksUser | null | undefined) => hasRole(u, SA, AD, GM, MD);
 
 /** Accepting an AI action item makes it official, so it is the merchandiser's call. */
-export const canAcceptActionItem = (u: BlocksUser | null | undefined) => hasRole(u, AD, GM, MD);
+export const canAcceptActionItem = (u: BlocksUser | null | undefined) => hasRole(u, SA, AD, GM, MD);
 
 /* -- management view ------------------------------------------------------ */
 /** The brief: "the GM sees everything including cost impact." */
-export const canSeeCostImpact = (u: BlocksUser | null | undefined) => hasRole(u, AD, GM);
-export const canAcknowledgeAlert = (u: BlocksUser | null | undefined) => hasRole(u, AD, GM);
-export const canSeeManagementView = (u: BlocksUser | null | undefined) => hasRole(u, AD, GM, MD);
+export const canSeeCostImpact = (u: BlocksUser | null | undefined) => hasRole(u, SA, AD, GM);
+export const canAcknowledgeAlert = (u: BlocksUser | null | undefined) => hasRole(u, SA, AD, GM);
+export const canSeeManagementView = (u: BlocksUser | null | undefined) => hasRole(u, SA, AD, GM, MD);
 
 /* -- reports -------------------------------------------------------------- */
-export const canShareWithBuyer = (u: BlocksUser | null | undefined) => hasRole(u, AD, GM, MD);
+export const canShareWithBuyer = (u: BlocksUser | null | undefined) => hasRole(u, SA, AD, GM, MD);
 export const canSendBuyerMail = canShareWithBuyer;
 
 export interface BlocksUser {

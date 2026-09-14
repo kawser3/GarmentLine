@@ -42,7 +42,7 @@ export function ConfigErrorPage({
         }}
       >
         <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.01em" }}>
-          Blocks Calculator cannot start
+          GarmentLine cannot start
         </div>
         <p style={{ color: "hsl(0, 0%, 31%)", marginTop: 6, marginBottom: 20 }}>
           The application is missing configuration it needs before it can connect to SELISE

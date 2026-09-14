@@ -927,6 +927,14 @@ h3 {
   padding: 0;
 }
 
+/* Vertical flow inside a card body: form field above field above table. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
 /*
  * Card grid. auto-fit + minmax is what makes this responsive without breakpoints: one
  * column on a phone, two on a laptop, three or four on a 2560px monitor. `min(…, 100%)`

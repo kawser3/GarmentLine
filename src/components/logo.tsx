@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { cx } from "@/lib/utils";
 
 /**
- * The SELISE Blocks Incident Management mark.
+ * The GarmentLine mark.
  *
  * Two real images, NOT a CSS mask. The artwork carries three brand colours —
  * orange-red #FB5202, blue #0081FD, green #0CC135 — and the three lines are the
@@ -28,7 +28,7 @@ export function Logo({
   className,
   spin = "none",
   wordmark = true,
-  title = "Blocks Incident Management",
+  title = "GarmentLine",
 }: {
   height?: number;
   className?: string;

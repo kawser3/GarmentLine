@@ -32,6 +32,14 @@
       "role": "factory-manager",
       "userId": "c4f3355b-cc5d-4ae4-81e5-d3422199142a",
       "active": true
+    },
+    {
+      "email": "owner.garmentline@example.com",
+      "firstName": "Tahmid",
+      "lastName": "Rahman",
+      "role": "superadmin",
+      "userId": "9ed0bcab-5f71-4c00-b33e-43679736f3c9",
+      "active": true
     }
   ]
 }

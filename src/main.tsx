@@ -16,7 +16,7 @@ const root = createRoot(document.getElementById("root")!);
 // minified stack trace.
 if (configError) {
   console.error(
-    "[blocks-incident] missing configuration:",
+    "[garmentline] missing configuration:",
     configError.missing.join(", "),
     "| runtime config present:",
     configError.hasRuntimeConfig,
@@ -36,8 +36,8 @@ if (configError) {
         },
         refetchOnWindowFocus: false,
         /*
-         * Two minutes. Shorter than the calculator this shell came from, because an incident
-         * register IS transactional — someone watching a live P1 should not be reading a
+         * Two minutes. Shorter than usual, because an issue
+         * log IS transactional — someone watching a live critical issue should not be reading a
          * five-minute-old status. Still not zero: every mutation invalidates explicitly, so
          * the person making a change sees it immediately regardless.
          */

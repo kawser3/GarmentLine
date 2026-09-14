@@ -125,20 +125,20 @@ if (!configError && typeof window !== "undefined") {
   const apiHost = new URL(env.apiUrl).hostname;
   if (!isSameSite(apiHost, window.location.hostname)) {
     console.info(
-      `[blocks-incident] API host ${apiHost} is not same-site with ${window.location.hostname}. ` +
+      `[garmentline] API host ${apiHost} is not same-site with ${window.location.hostname}. ` +
         `Fine for bearer-token auth; a cookie-based session would be dropped.`,
     );
   }
   if (!env.redirectUri.startsWith(window.location.origin)) {
     console.warn(
-      `[blocks-incident] redirectUri ${env.redirectUri} does not match this origin ` +
+      `[garmentline] redirectUri ${env.redirectUri} does not match this origin ` +
         `${window.location.origin}. IAM will reject the authorize request unless the ` +
         `URI is registered and intentional.`,
     );
   }
   if (!canSignIn) {
     console.info(
-      `[blocks-incident] No VITE_BLOCKS_OIDC_CLIENT_ID — the incident register is unreachable, ` +
+      `[garmentline] No VITE_BLOCKS_OIDC_CLIENT_ID — the issue log is unreachable, ` +
         `because every page needs a session. Run ` +
         `node scripts/02-oidc-client.mjs and put the client id in the .env file for this mode.`,
     );

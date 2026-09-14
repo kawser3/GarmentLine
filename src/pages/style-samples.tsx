@@ -5,6 +5,7 @@ import {
   approvals as approvalsCrud, buyers, sampleVersions, stylesCrud,
   type ApprovalRecord, type Decision,
 } from "@/features/data/garment-schemas";
+import { BuyerCommentsPanel } from "@/features/comments/buyer-comments";
 import { displayName } from "@/features/issues/history";
 import { canApproveSample, useAuthStore } from "@/stores/auth";
 import { useI18nStore } from "@/features/i18n/i18n";
@@ -200,6 +201,8 @@ export function StyleSamplesPage() {
           </Field>
         )}
       </Card>
+
+      <BuyerCommentsPanel styleId={styleId} buyerId={style.BuyerId} />
     </>
   );
 }

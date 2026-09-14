@@ -78,7 +78,7 @@ export function Brand({ size = "md" }: { size?: "md" | "lg" }) {
       {/* One turn on arrival, then still — see components/logo.tsx. */}
       <AnimatedLogo height={size === "lg" ? 32 : 26} wordmark={false} />
       <div>
-        <div className="brand-name">Incident Management</div>
+        <div className="brand-name">GarmentLine</div>
         <div className="sub">SELISE Blocks</div>
       </div>
     </div>

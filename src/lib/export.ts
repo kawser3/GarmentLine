@@ -52,7 +52,7 @@ export function downloadCsv<T>(filename: string, rows: T[], columns: Array<Colum
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-/** `blocks-incident-estimate-2026-08-15.csv` */
+/** `garmentline-estimate-2026-08-15.csv` */
 export function exportName(kind: string, scope: string) {
-  return `blocks-incident-${kind}-${scope}`.replace(/[^a-z0-9-]+/gi, "-").toLowerCase();
+  return `garmentline-${kind}-${scope}`.replace(/[^a-z0-9-]+/gi, "-").toLowerCase();
 }

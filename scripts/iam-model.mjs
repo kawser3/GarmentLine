@@ -43,20 +43,20 @@ export const permissions = [
 
 /** Which roles hold which permission, by resource suffix. */
 const grants = {
-  'platform::roles': ['admin'],
-  'people::manage': ['admin', 'factory-manager'],
-  'masterdata::manage': ['admin', 'factory-manager', 'merchandiser'],
-  'issue::read': ['admin', 'factory-manager', 'merchandiser', 'line-supervisor', 'qa-inspector'],
-  'issue::raise': ['admin', 'factory-manager', 'merchandiser', 'line-supervisor', 'qa-inspector'],
-  'issue::progress': ['admin', 'factory-manager', 'merchandiser', 'line-supervisor', 'qa-inspector'],
-  'issue::verify': ['admin', 'factory-manager', 'qa-inspector'],
-  'issue::close': ['admin', 'factory-manager', 'merchandiser'],
-  'sample::read': ['admin', 'factory-manager', 'merchandiser', 'line-supervisor', 'qa-inspector'],
-  'sample::approve': ['admin', 'factory-manager', 'merchandiser'],
-  'action::accept': ['admin', 'factory-manager', 'merchandiser'],
-  'management::view': ['admin', 'factory-manager', 'merchandiser'],
-  'management::cost': ['admin', 'factory-manager'],
-  'alert::acknowledge': ['admin', 'factory-manager'],
+  'platform::roles': ['superadmin', 'admin'],
+  'people::manage': ['superadmin', 'admin', 'factory-manager'],
+  'masterdata::manage': ['superadmin', 'admin', 'factory-manager', 'merchandiser'],
+  'issue::read': ['superadmin', 'admin', 'factory-manager', 'merchandiser', 'line-supervisor', 'qa-inspector'],
+  'issue::raise': ['superadmin', 'admin', 'factory-manager', 'merchandiser', 'line-supervisor', 'qa-inspector'],
+  'issue::progress': ['superadmin', 'admin', 'factory-manager', 'merchandiser', 'line-supervisor', 'qa-inspector'],
+  'issue::verify': ['superadmin', 'admin', 'factory-manager', 'qa-inspector'],
+  'issue::close': ['superadmin', 'admin', 'factory-manager', 'merchandiser'],
+  'sample::read': ['superadmin', 'admin', 'factory-manager', 'merchandiser', 'line-supervisor', 'qa-inspector'],
+  'sample::approve': ['superadmin', 'admin', 'factory-manager', 'merchandiser'],
+  'action::accept': ['superadmin', 'admin', 'factory-manager', 'merchandiser'],
+  'management::view': ['superadmin', 'admin', 'factory-manager', 'merchandiser'],
+  'management::cost': ['superadmin', 'admin', 'factory-manager'],
+  'alert::acknowledge': ['superadmin', 'admin', 'factory-manager'],
 };
 
 for (const perm of permissions) {
@@ -64,6 +64,7 @@ for (const perm of permissions) {
 }
 
 export const roles = [
+  { slug: 'superadmin', name: 'Super Administrator', description: 'Platform owner: holds every permission, including role and people management.', permissions: [] },
   { slug: 'admin', name: 'Administrator', description: 'Changes the rules: roles, permissions, access.', permissions: [] },
   { slug: 'factory-manager', name: 'Factory Manager', description: 'Sees everything including cost impact.', permissions: [] },
   { slug: 'merchandiser', name: 'Merchandiser', description: 'Owns buyers and styles; approves samples.', permissions: [] },
@@ -72,12 +73,24 @@ export const roles = [
   { slug: 'buyer', name: 'Buyer', description: 'External. Reads the approval report for their own styles.', permissions: [] },
 ];
 
+/*
+ * The single source of truth is the grants map above: each role's permission list is
+ * derived from it, so the model cannot drift into the state where the script reads an
+ * empty list and silently strips everything server-side.
+ */
+for (const role of roles) {
+  role.permissions = permissions
+    .filter((perm) => perm.roles.includes(role.slug))
+    .map((perm) => perm.resource);
+}
+
 export const DEMO_PASSWORD = 'GarmentLine#2026';
 
-// The people the brief names, plus a GM and an admin.
+// The people the brief names, plus a GM, an admin, and the platform owner.
 export const demoUsers = [
   { email: 'nusrat.garmentline@example.com', firstName: 'Nusrat', lastName: 'Jahan', role: 'merchandiser' },
   { email: 'rafiqul.garmentline@example.com', firstName: 'Rafiqul', lastName: 'Islam', role: 'line-supervisor' },
   { email: 'qa.garmentline@example.com', firstName: 'Shamima', lastName: 'Akter', role: 'qa-inspector' },
   { email: 'gm.garmentline@example.com', firstName: 'Anwar', lastName: 'Hossain', role: 'factory-manager' },
+  { email: 'owner.garmentline@example.com', firstName: 'Tahmid', lastName: 'Rahman', role: 'superadmin' },
 ];
