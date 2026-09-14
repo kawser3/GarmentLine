@@ -12,15 +12,33 @@ const CLIENT_NAME = 'GarmentLine';
 const PROVIDER_NAME = 'garmentline-sso';
 const DEV_PORT = 5173;
 
-// Every origin the app could plausibly be served from, registered at once - adding one
-// later costs a new client id and an env edit on every environment. No .slsblx.com entry
-// yet: this project has no application domain until a deployment is set up, and the
-// portal issues the hostname at that point.
+// Every origin the app can be served from. The deployed origin is the one Release
+// issued for this project; lib/env.ts derives the callback from window.location, so
+// a hostname that is not in this list produces "redirectUri is not registered for
+// this client" at /idp/initiate, with the login button dead on the deployed site.
+//
+// Pass extra origins on the command line to register another domain:
+//   node scripts/02-oidc-client.mjs https://garmentline.example.com
+const DEPLOYED_ORIGIN = 'https://dbyfks-elhla.slsblx.com';
+const EXTRA_ORIGINS = process.argv.slice(2).filter((a) => a.startsWith('http'));
 const REDIRECT_URIS = [
   `http://localhost:${DEV_PORT}/login/callback`,
   `https://localhost:${DEV_PORT}/login/callback`,
   `https://garmentline.seliselocal.com/login/callback`,
   `https://garmentline.seliselocal.com:${DEV_PORT}/login/callback`,
+  `${DEPLOYED_ORIGIN}/login/callback`,
+  ...EXTRA_ORIGINS.map((o) => `${o.replace(/\/+$/, '')}/login/callback`),
+];
+
+// Saving an existing client REPLACES the whole document, so every field the save DTO
+// knows about has to be carried forward or it silently resets to a default - which is
+// how isAutoRedirect gets lost and IAM starts parking users on an interstitial page.
+const SAVE_FIELDS = [
+  'itemId', 'clientDisplayName', 'clientType', 'redirectUris', 'postLogoutRedirectUris',
+  'allowedScopes', 'allowedResponseTypes', 'requirePkce', 'requireConsent',
+  'frontChannelLogoutUri', 'backChannelLogoutUri', 'isAutoRedirect',
+  'externalDiscoveryEndpoint', 'isActive', 'loginMode', 'useTokensCookie', 'requireMfa',
+  'allowedMfaMethods', 'registerAsIdentityProvider', 'isDeviceFlowClient',
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -68,6 +86,27 @@ if (!client) {
   }
 } else {
   console.log(`reusing client ${client.clientId}`);
+  /*
+   * A client that already exists keeps whatever URIs it was created with - which is
+   * why the first deployment's login failed: the hostname Release issued was not in
+   * the list, and nothing here updated it. Union rather than replace, so re-running
+   * after a redeploy never drops an origin someone registered by hand.
+   */
+  const union = [...new Set([...(client.redirectUris ?? []), ...REDIRECT_URIS])];
+  const missing = union.filter((u) => !(client.redirectUris ?? []).includes(u));
+  if (missing.length) {
+    const body = Object.fromEntries(
+      SAVE_FIELDS.filter((f) => client[f] !== undefined).map((f) => [f, client[f]]),
+    );
+    /* Never echo the stored secret back at the API. */
+    await s.api('/iam/v4/oidc-clients', { body: { ...body, redirectUris: union } });
+    console.log(`registered ${missing.length} new redirect URI(s):`);
+    for (const u of missing) console.log(`  + ${u}`);
+    await sleep(3000);
+    client = (await listClients()).find((c) => c.clientDisplayName === CLIENT_NAME && c.isActive);
+  } else {
+    console.log('redirect URIs already up to date');
+  }
 }
 
 const authMethod = client.tokenEndpointAuthMethod || 'client_secret_post';
