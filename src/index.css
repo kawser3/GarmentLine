@@ -33,10 +33,14 @@
   --border: #e2e8f0;
   --border-strong: #cbd5e1;
 
-  /* text — three emphasis levels */
+  /* text — three emphasis levels.
+     Every level is checked against --card (#fff), not against --page: the subtle
+     level carries timestamps in the issue history and the labels in a detail
+     card, which is body text a reader has to be able to read. #7b7c7f measured
+     4.17:1 and failed AA; this is the same neutral, one step darker. */
   --fg: #1b2021;
   --fg-muted: #475569;
-  --fg-subtle: #7b7c7f;
+  --fg-subtle: #6a6b6e;
 
   /* semantic */
   --success: #15803d;
@@ -124,8 +128,11 @@
   --fg: #f1f4fa;
   --fg-2: #c7cee3;
   --fg-muted: #9aa6c3;
-  --fg-subtle: #6b7793;
-  --fg-caption: #5c6584;
+  /* Measured on --card (#121729): these were 3.97:1 and 3.09:1, both under AA.
+     Lightened just enough to clear 4.5 while keeping caption a step below
+     subtle, so the five-level hierarchy above still reads as five levels. */
+  --fg-subtle: #8792ad;
+  --fg-caption: #7e8aa6;
   --card-raised: #171d33;
   --row-line: rgba(148, 163, 184, 0.05);
 
@@ -6120,4 +6127,97 @@ td .plain > li + li {
 }
 td > .row-actions {
   gap: 6px;
+}
+
+
+/* ---------------------------------------------------- keyboard focus ----
+ *
+ * Only .btn and one card carried a focus ring, so tabbing through the sidebar,
+ * a table's issue links, the status select or the language switcher moved an
+ * invisible cursor — the app was unusable without a mouse. One rule, scoped to
+ * :focus-visible so a mouse click never paints a ring the pointer user did not
+ * ask for.
+ *
+ * outline (not box-shadow) because it follows border-radius, survives overflow
+ * clipping in the table wrapper, and stays visible in forced-colors mode.
+ */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+summary:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible,
+.input:focus-visible,
+.select:focus-visible,
+.textarea:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Inside a row the offset ring would overlap the cell above; tighten it. */
+td a:focus-visible,
+th a:focus-visible {
+  outline-offset: 1px;
+}
+
+/* The sidebar sits on its own surface, where the brand blue is the one colour
+   guaranteed to separate from both the rail and the active item. */
+.sidebar a:focus-visible,
+.sidebar button:focus-visible {
+  outline-color: var(--primary);
+  outline-offset: -2px;
+}
+
+/* ------------------------------------------------------ touch targets ----
+ *
+ * The icon buttons in the topbar are 34px and the small buttons in a table row
+ * are about 28px tall — fine for a mouse, under the 44px a finger needs. The
+ * fix extends the HIT AREA rather than the button: inflating the visual box to
+ * 44px would leave a desktop toolbar looking like a tablet's, and the density
+ * is the point on a screen that lists an order book.
+ *
+ * Scoped to coarse pointers so a mouse user's layout is untouched, and drawn as
+ * a centred overlay child so the click still lands on the button itself.
+ */
+@media (pointer: coarse) {
+  .icon-btn,
+  .btn.sm,
+  .row-actions .btn {
+    position: relative;
+  }
+  .icon-btn::after,
+  .btn.sm::after,
+  .row-actions .btn::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  /* 44px targets that touch each other are one target; keep them 8px apart. */
+  td > .row-actions {
+    gap: 10px;
+  }
+}
+
+/* --------------------------------------------- focus not obscured (WCAG 2.2) ----
+ *
+ * The topbar is sticky at 60px and a table's header row is sticky inside its own
+ * scroller. Tabbing to a control just above the fold scrolls it flush to the top
+ * of the viewport — i.e. underneath the topbar, where the focus ring is invisible
+ * and the keyboard user has lost their place. scroll-padding reserves the sticky
+ * height so the browser stops short of hiding it.
+ */
+:root {
+  scroll-padding-top: 76px; /* topbar 60 + 16 breathing room */
+}
+.table-wrap {
+  scroll-padding-top: 44px; /* the sticky thead inside the scroller */
 }
