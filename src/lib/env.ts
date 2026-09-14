@@ -22,6 +22,7 @@ interface RuntimeConfig {
   idpUrl?: string;
   aiModelName?: string;
   aiModelProvider?: string;
+  aiWidgetId?: string;
 }
 
 declare global {
@@ -116,6 +117,17 @@ export const env = {
     "deepseek/deepseek-v4-flash-0731",
   aiModelProvider:
     pick(runtime.aiModelProvider, import.meta.env.VITE_BLOCKS_AI_MODEL_PROVIDER) ?? "openai",
+  /**
+   * The published widget of the project's AI agent.
+   *
+   * Preferred over querying a model directly, because the AI subscription is
+   * attached to the Blocks ACCOUNT a token belongs to, not to the project: a user
+   * created inside the project is refused 402 on the direct route however
+   * correctly the app authorises them. The widget is owned by the account that
+   * holds the subscription, so the entitlement is checked once, centrally,
+   * instead of against whoever happens to be signed in.
+   */
+  aiWidgetId: pick(runtime.aiWidgetId, import.meta.env.VITE_BLOCKS_AI_WIDGET_ID) ?? "",
 } as const;
 
 /** False when sign-in cannot work because no OIDC client is configured for this build. */

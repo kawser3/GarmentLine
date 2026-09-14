@@ -47,44 +47,9 @@ export interface ParseResult {
  * The model is addressed directly (model_name + model_provider from env) with the parsing
  * instructions as base context — no portal agent needs to exist for this to answer.
  */
-async function queryBlocksAgent(prompt: string, signal?: AbortSignal): Promise<string> {
-  const token = getAccessToken();
-  if (!token) throw new Error("No session token for the AI service");
-  const res = await fetch(`${env.apiUrl}/agents-api/ai-agent/query/stream`, {
-    method: "POST",
-    signal,
-    headers: {
-      "Content-Type": "application/json",
-      "x-blocks-key": env.projectKey,
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      query: prompt,
-      call_from: "api",
-      model_name: env.aiModelName,
-      model_provider: env.aiModelProvider,
-      response_type: "text",
-    }),
-  });
-  if (!res.ok) {
-    const detail = (await res.text()).slice(0, 200);
-    /*
-     * 402 is not a fault in this app and reads badly as a raw body. The AI
-     * subscription is attached to the ACCOUNT the token belongs to, not to the
-     * project, so a demo user created inside the project is refused while the
-     * owning account is served. Say which, so the reader knows to switch
-     * account rather than to go looking for a bug.
-     */
-    if (res.status === 402) {
-      throw new Error(
-        "this Blocks account has no AI subscription — the AI answers for the " +
-          "account that owns it, not for a project user",
-      );
-    }
-    throw new Error(`Blocks AI agent ${res.status}: ${detail}`);
-  }
-  if (!res.body) throw new Error("Blocks AI agent returned no stream");
-
+/** Read one SSE stream and return the `chat_response` message. Both AI routes speak it. */
+async function readChatStream(res: Response): Promise<string> {
+  if (!res.body) throw new Error("AI service returned no stream");
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
@@ -103,9 +68,7 @@ async function queryBlocksAgent(prompt: string, signal?: AbortSignal): Promise<s
     }
     if (ev === "chat_response") answer = typeof payload.message === "string" ? payload.message : null;
     if (ev === "chat_error") {
-      throw new Error(
-        `AI service: ${String(payload.error ?? payload.message ?? "processing failed")}`,
-      );
+      throw new Error(String(payload.error ?? payload.message ?? "processing failed"));
     }
   };
 
@@ -120,8 +83,87 @@ async function queryBlocksAgent(prompt: string, signal?: AbortSignal): Promise<s
       buffer = buffer.slice(sep + 2);
     }
   }
-  if (answer == null) throw new Error("AI service stream ended without an answer");
+  if (answer == null) throw new Error("AI stream ended without an answer");
   return answer;
+}
+
+/**
+ * Query the Blocks AI service (agents.seliseblocks.com), by two routes.
+ *
+ * The AI subscription is attached to the ACCOUNT a token belongs to, not to the
+ * project. A merchandiser created inside the project is therefore refused 402 on
+ * the direct model route however correctly this app authorises her — which is the
+ * wrong place for that decision to be made, since whether she may use the feature
+ * is already settled by garmentline::action::accept.
+ *
+ * So the AGENT WIDGET comes first when one is configured: the agent belongs to the
+ * account that holds the subscription, so the entitlement is checked once and
+ * centrally rather than against whoever happens to be signed in. The direct model
+ * route stays as the fallback for a build with no agent, and the deterministic
+ * lexicon behind that. Every step names itself in the UI.
+ *
+ * Both routes answer over SSE, not a JSON body: lifecycle events stream first and
+ * the answer arrives as a `chat_response`.
+ */
+async function queryBlocksAgent(prompt: string, signal?: AbortSignal): Promise<string> {
+  const token = getAccessToken();
+  if (!token) throw new Error("No session token for the AI service");
+  const headers = {
+    "Content-Type": "application/json",
+    "x-blocks-key": env.projectKey,
+    Authorization: `Bearer ${token}`,
+  };
+
+  if (env.aiWidgetId) {
+    try {
+      const res = await fetch(`${env.apiUrl}/agents-api/ai-agent/chat/${env.aiWidgetId}`, {
+        method: "POST",
+        signal,
+        headers,
+        body: JSON.stringify({ message: prompt }),
+      });
+      if (res.ok) {
+        const reply = await readChatStream(res);
+        /*
+         * Judged on the ANSWER, not on the status. An agent with no model wired
+         * returns 200 and a cheerful "Connected" to anything you ask it, which
+         * would otherwise sail through here and lose a route that works. If the
+         * reply carries no JSON list it is not an answer to this question.
+         */
+        if (reply.includes("[") && reply.includes("]")) return reply;
+        console.info("[garmentline] agent widget answered without a list; using the direct route.");
+      } else {
+        console.info(`[garmentline] agent widget ${res.status}; using the direct route.`);
+      }
+    } catch (e) {
+      /* A deleted or unpublished widget must not take the feature down with it. */
+      console.info(`[garmentline] agent widget failed (${e instanceof Error ? e.message : "error"}).`);
+    }
+  }
+
+  const res = await fetch(`${env.apiUrl}/agents-api/ai-agent/query/stream`, {
+    method: "POST",
+    signal,
+    headers,
+    body: JSON.stringify({
+      query: prompt,
+      call_from: "api",
+      model_name: env.aiModelName,
+      model_provider: env.aiModelProvider,
+      response_type: "text",
+    }),
+  });
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200);
+    if (res.status === 402) {
+      throw new Error(
+        "this Blocks account has no AI subscription, and no agent widget is " +
+          "configured to carry one — set VITE_BLOCKS_AI_WIDGET_ID",
+      );
+    }
+    throw new Error(`Blocks AI agent ${res.status}: ${detail}`);
+  }
+  return readChatStream(res);
 }
 
 /** Pull the first JSON array out of an agent reply, however it is wrapped. */
