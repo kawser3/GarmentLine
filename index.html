@@ -9,11 +9,10 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet" />
     <meta charset="UTF-8" />
-    <!-- Generated from the supplied logo by scripts/make-logo.mjs: the cube glyph alone,
-         white on SELISE blue. The wordmark is illegible at 16px and a transparent icon
-         vanishes against a dark browser chrome, so this one is composited, not masked. -->
-    <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
+    <!-- A running stitch resolving into a check — see public/favicon.svg. SVG only:
+         there is no build step here that rasterises, and a <link> pointing at a PNG
+         that nothing generates is how this file previously shipped a 404. -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#0066b2" />
     <!-- viewport-fit=cover is required for env(safe-area-inset-*) to report anything but 0.
          It lets the page extend under a notch, which is only safe because the shell pads
@@ -21,7 +20,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta
       name="description"
-      content="Pricing packages and a pay-as-you-go cost estimator for the SELISE Blocks platform."
+      content="Sample approval and production issue tracking for knit-garment manufacturing: approved sample versions, an append-only issue trail, and repeat-defect alerts."
     />
     <title>GarmentLine — Sample Approval &amp; Production Issues</title>
 

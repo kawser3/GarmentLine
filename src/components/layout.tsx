@@ -74,15 +74,46 @@ const NAV: { group: DictKey; items: NavItem[] }[] = [
 ];
 
 /**
- * The sidebar mark: the product name, set in text. No image mark and no motion —
- * the sidebar is furniture, not a hero.
+ * The mark: a running stitch that resolves into a check.
+ *
+ * The two halves of what this app records — work done on the floor, and the
+ * decision that a sample passed. Drawn inline rather than loaded as an image so
+ * it inherits the theme and costs no request; public/favicon.svg is the same
+ * glyph on a fixed blue tile, because a favicon cannot read a CSS variable.
+ */
+export function BrandMark({ size = 26 }: { size?: number }) {
+  return (
+    <svg
+      className="brand-mark"
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      role="img"
+      aria-label="GarmentLine"
+    >
+      <rect width="32" height="32" rx="7.5" fill="var(--primary)" />
+      <path
+        d="M7.6 16.9 L13.3 22.6 L24.6 9.6"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="3.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeDasharray="6 3.2"
+      />
+    </svg>
+  );
+}
+
+/**
+ * The sidebar lockup: the mark, the product name, the platform it runs on.
  */
 export function Brand({ size = "md" }: { size?: "md" | "lg" }) {
   return (
     <div className="brand-lockup">
-      {/* The collapsed icon rail keeps a two-letter monogram — an empty header
-          row reads as a broken layout rather than a choice. */}
-      <span className="brand-mono" aria-hidden>GL</span>
+      {/* Survives the collapse to an icon rail, where the wordmark is hidden —
+          an empty header row reads as a broken layout rather than a choice. */}
+      <BrandMark size={size === "lg" ? 30 : 26} />
       <div>
         <div className={size === "lg" ? "brand-name brand-name-lg" : "brand-name"}>GarmentLine</div>
         <div className="sub">SELISE Blocks</div>

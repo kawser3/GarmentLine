@@ -12,6 +12,7 @@
 
 import { type ReactNode } from "react";
 import { BadgeCheck, MessageSquareText, Repeat2, ShieldCheck } from "lucide-react";
+import { BrandMark } from "@/components/layout";
 
 /**
  * What the product does, in four lines.
@@ -26,10 +27,11 @@ const FEATURES = [
   { icon: ShieldCheck, text: "Append-only history: no entry edited, no entry deleted" },
 ];
 
-/** Text wordmark — no image mark, per the product decision to open without a logo. */
+/** The mark and the wordmark. Same glyph as the sidebar and the favicon. */
 export function AuthBrandMark() {
   return (
     <div className="auth-brandmark">
+      <BrandMark size={38} />
       <span className="auth-brandmark-name">GarmentLine</span>
       <span className="auth-brandmark-sub">Sample approval · production issues · SELISE Blocks</span>
     </div>

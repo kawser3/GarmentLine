@@ -5552,18 +5552,10 @@ h3 {
   color: var(--fg-subtle);
   line-height: 1.3;
 }
-/* Collapsed to icons, the monogram survives in the mark's place. */
-.brand-mono {
-  display: none;
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  line-height: 1;
-  padding: 7px 8px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-.sidebar.collapsed .brand-mono {
+/* The mark is drawn inline (layout.tsx); it needs only to keep its size when the
+   lockup's text is squeezed, and to stay put when the rail collapses. */
+.brand-mark {
+  flex: none;
   display: block;
 }
 .sidebar.collapsed .brand-lockup > div:last-child {
