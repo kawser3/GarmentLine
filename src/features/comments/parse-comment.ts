@@ -67,7 +67,21 @@ async function queryBlocksAgent(prompt: string, signal?: AbortSignal): Promise<s
     }),
   });
   if (!res.ok) {
-    throw new Error(`Blocks AI agent ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const detail = (await res.text()).slice(0, 200);
+    /*
+     * 402 is not a fault in this app and reads badly as a raw body. The AI
+     * subscription is attached to the ACCOUNT the token belongs to, not to the
+     * project, so a demo user created inside the project is refused while the
+     * owning account is served. Say which, so the reader knows to switch
+     * account rather than to go looking for a bug.
+     */
+    if (res.status === 402) {
+      throw new Error(
+        "this Blocks account has no AI subscription — the AI answers for the " +
+          "account that owns it, not for a project user",
+      );
+    }
+    throw new Error(`Blocks AI agent ${res.status}: ${detail}`);
   }
   if (!res.body) throw new Error("Blocks AI agent returned no stream");
 
