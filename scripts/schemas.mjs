@@ -95,6 +95,11 @@ export const schemas = [
       S('OwnerName', 'Display name of the owner'),
       S('Department', 'Pattern | Cutting | Dyeing | Sewing | Finishing | QA'),
       D('DueDate', 'When the correction is due'),
+      /* When it was raised ON THE FLOOR, which is not when the row was written.
+         CreatedDate is stamped by the gateway and cannot be supplied on insert,
+         so a seeded or back-dated issue would otherwise claim to be from today
+         and every "last 30 days" figure would really mean "since the import". */
+      D('RaisedAt', 'When the issue was raised, as distinct from row creation'),
       S('RaisedBy', 'IAM user id of whoever raised it'),
       S('RaisedByName', 'Display name captured at raise time'),
       S('SourceCommentId', 'BuyerComment.ItemId when AI-derived'),

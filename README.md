@@ -17,20 +17,20 @@ These are the four behaviours the case calls non-negotiable, and where each live
 | Guarantee | How it is enforced |
 |---|---|
 | **The sample version of record** — timestamp + person, permission-gated | `ApprovalRecord` is **append-only**; "which version is approved" is derived from the newest record, never a mutable status. The `Status` field on the version is a cache, written *after* the record — if the second write fails the decision still stands in the trail. |
-| **History that cannot be rewritten** | Every lifecycle change writes an `IssueEvent` row (actor, kind, note, timestamp). The schema's access policy permits insert and read only — no update, no delete. |
+| **History that cannot be rewritten** | Every lifecycle change writes an `IssueEvent` row (actor, kind, note, timestamp). Nothing in the app updates or deletes one — the history is written forward only. (Enforced in the client today; the gateway-side rule that would make it impossible from outside the app is listed under Limits.) |
 | **A repeat defect is impossible to miss** | The **second** occurrence of the same defect type on the same line inside 10 days raises a `RepeatAlert` — persisted, not a toast — with links to the evidence. The GM's view reads that table, so Monday's warning is still on the board Friday. |
 | **AI proposes, a human decides** | A messy Banglish buyer comment becomes a reviewable action list (what / part / department / urgency / type). Every row is editable; nothing becomes an issue until a merchandiser presses Accept. The AI never writes an official record. |
 
 ## Roles
 
-Five sign-in roles, scoped by IAM permissions (not hidden buttons — the API refuses):
+Seven roles, five of them with demo accounts below. Capability is decided per role in `src/stores/auth.ts` and row-level visibility in `src/features/issues/scope.ts`:
 
 | Role | Sees | May |
 |---|---|---|
 | Merchandiser | own buyers' styles and issues | record buyer comments, run the AI parse, accept/reject proposals, **stamp sample decisions** |
 | Line supervisor | own lines | raise issues, record corrections, attach evidence |
 | QA inspector | factory-wide issues | raise, verify corrections, reject with reason |
-| Factory manager (GM) | everything + cost impact | management view, acknowledge repeat alerts, master data, people |
+| Factory manager (GM) | everything + cost impact | management view, master data, read the people register |
 | Admin / Super administrator | everything | as GM, plus administration |
 
 Demo accounts (password `GarmentLine#2026`): `nusrat.garmentline@example.com`
@@ -43,7 +43,7 @@ Demo accounts (password `GarmentLine#2026`): `nusrat.garmentline@example.com`
 | Service | Where it earns its place |
 |---|---|
 | **Data Gateway** | 11 schemas (`Style`, `SampleVersion`, `ApprovalRecord`, `Issue`, `IssueEvent`, `BuyerComment`, `ActionItem`, `RepeatAlert`, `Buyer`, `Line`, `CostAssumption`) with typed CRUD + access policies |
-| **Storage** | evidence photos attached to issues and corrections, served by file id |
+| **Storage** | provisioned, with `EvidenceFileIds` carried on issues and sample versions; the upload UI is not built yet (see Limits) |
 | **IAM** | roles, permissions (`garmentline::*`), role-scoped visibility, demo users |
 | **IDP / OIDC** | browser sign-in via the platform client (PKCE), session bootstrap |
 | **Logic · Mail** | buyer notice on approve/reject — template `GarmentLineSampleDecision`, sent *after* the record stands; failure never rolls back a decision |
@@ -106,3 +106,25 @@ Run in order after the project exists (`node scripts/NN-….mjs`); all are idemp
 
 Built for the SELISE Blocks hackathon, 2026-09-14. Solo entry by Kawser Harun
 (`harun.kawser@selisegroup.com`).
+
+## Limits — what is not built
+
+Stated plainly, because a reviewer will find these anyway and a README that
+oversells is worse than one that is short.
+
+- **Row-level scoping is enforced in the UI, not at the gateway.** `scope.ts`
+  decides what each role sees, and it says so in its own header comment. A
+  signed-in user who queried the Data gateway directly could read another
+  scope's rows. The fix is a Data Gateway access policy comparing the owner
+  field to the token subject; it is designed, not deployed.
+- **Append-only is a property of the code, not yet of the schema.** No data
+  rules are deployed for `IssueEvent` or `ApprovalRecord`, so the guarantee
+  holds for anything going through this app and not against a direct API call.
+- **Evidence upload is not wired.** The field exists on the schema and travels
+  through the app; nothing writes a file id to it yet.
+- **Repeat alerts cannot be acknowledged from the UI.** The capability and the
+  `Acknowledged` field both exist; no screen writes it, so an alert stays live
+  until the data changes.
+- **The people register is read-only.** Accounts and roles are provisioned by
+  `scripts/03-roles-users.mjs`. This is deliberate for the demo, not an
+  oversight, but it does mean the GM cannot invite anyone from inside the app.

@@ -62,8 +62,11 @@ export function IssuesPage() {
   if (all.error) return <ErrorAlert error={all.error} />;
   if (all.isPending) return <Loading label="Loading issues…" />;
 
+  /* Newest first by when it was RAISED, not when the row was written. */
   const rows = [...filter.rows].sort(
-    (a, b) => new Date(b.CreatedDate ?? 0).getTime() - new Date(a.CreatedDate ?? 0).getTime());
+    (a, b) =>
+      new Date(b.RaisedAt ?? b.CreatedDate ?? 0).getTime() -
+      new Date(a.RaisedAt ?? a.CreatedDate ?? 0).getTime());
 
   return (
     <>

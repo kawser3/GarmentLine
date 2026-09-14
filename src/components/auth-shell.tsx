@@ -31,9 +31,9 @@ const FEATURES = [
 export function AuthBrandMark() {
   return (
     <div className="auth-brandmark">
-      <BrandMark size={38} />
+      <BrandMark size={44} />
       <span className="auth-brandmark-name">GarmentLine</span>
-      <span className="auth-brandmark-sub">Sample approval · production issues · SELISE Blocks</span>
+      <span className="auth-brandmark-sub">Sample approval and production issues</span>
     </div>
   );
 }

@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="GarmentLine">
   <title>GarmentLine</title>
   <!--
-    A running stitch that resolves into a check: the two things this app is for,
-    production work on the floor and the decision that a sample is approved.
-    Composited on a solid tile rather than left transparent, so it stays visible
-    against a dark browser chrome at 16px.
+    A garment hanger: the one object that says "apparel" at 16px without a word
+    of explanation. Geometric and stroked rather than illustrated, to sit with
+    the Swiss/minimal system the rest of the interface uses. Composited on a
+    solid tile so it survives a dark browser chrome.
   -->
-  <rect width="32" height="32" rx="7.5" fill="#0066b2"/>
-  <path d="M7.6 16.9 L13.3 22.6 L24.6 9.6"
-        fill="none" stroke="#ffffff" stroke-width="3.2"
-        stroke-linecap="round" stroke-linejoin="round"
-        stroke-dasharray="6 3.2"/>
+  <rect width="32" height="32" rx="7.5" fill="#5b21b6"/>
+  <g fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 12.4 V10.2 a2.4 2.4 0 1 1 2.4 -2.4"/>
+    <path d="M16 12.4 L6.4 20.6 H25.6 Z"/>
+  </g>
 </svg>

@@ -2,8 +2,8 @@
    Blocks Calculator — design system
 
    The tokens below are the ones seliseblocks.com actually ships, read from its own
-   stylesheet rather than eyeballed: SELISE blue #0066b2, the deep-navy dark surfaces
-   (#001728 / #002847 / #003661), the slate light surfaces (#f1f5f9 / #e2e8f0), Inter,
+   stylesheet rather than eyeballed: the brand violet #5b21b6, neutral-black dark
+   surfaces (#09090b / #131316 / #1a1a1f), neutral light surfaces (#fafafa / #e5e5e7), Inter,
    and a 10px radius. This app sits under the same brand, so it uses the same values.
 
    Two additions the marketing site does not need but an application does:
@@ -19,28 +19,45 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&display=swap');
 
 :root {
-  /* brand — SELISE blue, unchanged between themes so the identity is constant */
-  --primary: #0066b2;
-  --primary-hover: #00558f;
+  /*
+   * brand — a deep plum-violet, not blue.
+   *
+   * Chosen against the semantic scale rather than for taste: success is green,
+   * warning amber, danger red, so a brand in any of those hues stops reading as
+   * a brand the moment it sits beside a status. Violet is the one premium
+   * family none of them occupies. #5B21B6 carries white at 8.98:1 as a button
+   * fill AND works as link text on white at the same ratio, which a lighter
+   * violet does not — a link is the single most common use of this token.
+   */
+  --primary: #5b21b6;
+  --primary-hover: #4c1d95;
   --primary-fg: #ffffff;
-  --primary-soft: #e8f1f9;
-  --primary-border: #a8cbe6;
+  --primary-soft: #f5f2fd;
+  --primary-border: #ddd0f7;
 
-  /* surfaces */
-  --page: #f8fafc;
+  /*
+   * Gold, used sparingly: the mark, and an active indicator. It is the accent of
+   * the luxury pairing this palette is built on and must NEVER become a second
+   * action colour — at button size it is indistinguishable from --warning.
+   */
+  --accent: #a16207;
+  --accent-soft: #fdf8ed;
+
+  /* surfaces — neutral greys, no blue cast, so the violet is the only hue */
+  --page: #fafafa;
   --card: #ffffff;
-  --card-alt: #f1f5f9;
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
+  --card-alt: #f5f5f6;
+  --border: #e5e5e7;
+  --border-strong: #cfcfd4;
 
   /* text — three emphasis levels.
      Every level is checked against --card (#fff), not against --page: the subtle
      level carries timestamps in the issue history and the labels in a detail
      card, which is body text a reader has to be able to read. #7b7c7f measured
      4.17:1 and failed AA; this is the same neutral, one step darker. */
-  --fg: #1b2021;
-  --fg-muted: #475569;
-  --fg-subtle: #6a6b6e;
+  --fg: #18181b;
+  --fg-muted: #52525b;
+  --fg-subtle: #6b6b75;
 
   /* semantic */
   --success: #15803d;
@@ -110,31 +127,39 @@
 }
 
 :root[data-theme='dark'] {
-  /* Brand blue holds its value on the dark navy; only the soft/border tints move. */
-  --primary: #2a8fd8;
-  --primary-hover: #4aa5e6;
-  --primary-fg: #ffffff;
-  --primary-soft: #002847;
-  --primary-border: #00558f;
+  /*
+   * On black the deep violet disappears, so dark lifts the brand to violet-300
+   * and flips the text ON it to near-black — white on a light violet is 2.7:1
+   * and unreadable. The hue is the same family; only the value moves.
+   */
+  --primary: #a78bfa;
+  --primary-hover: #c4b5fd;
+  --primary-fg: #09090b;
+  --primary-soft: #221a3a;
+  --primary-border: #4c2f8f;
 
-  --page: #0a0e1a;
-  --card: #121729;
-  --card-alt: #171d33;
-  --border: rgba(148, 163, 184, 0.09);
-  --border-strong: rgba(148, 163, 184, 0.18);
+  --accent: #d8a13c;
+  --accent-soft: #2a2010;
+
+  /* Neutral black, not navy: the surfaces carry no hue at all, which is what
+     lets a single violet read as deliberate rather than as a tint of the page. */
+  --page: #09090b;
+  --card: #131316;
+  --card-alt: #1a1a1f;
+  --border: rgba(228, 228, 231, 0.09);
+  --border-strong: rgba(228, 228, 231, 0.18);
 
   /* Four emphasis levels, plus a fifth for captions. A dense table needs a step
      below "muted" or every secondary value competes with the primary one. */
-  --fg: #f1f4fa;
-  --fg-2: #c7cee3;
-  --fg-muted: #9aa6c3;
-  /* Measured on --card (#121729): these were 3.97:1 and 3.09:1, both under AA.
-     Lightened just enough to clear 4.5 while keeping caption a step below
-     subtle, so the five-level hierarchy above still reads as five levels. */
-  --fg-subtle: #8792ad;
-  --fg-caption: #7e8aa6;
-  --card-raised: #171d33;
-  --row-line: rgba(148, 163, 184, 0.05);
+  /* Every level measured on --card (#131316); the lowest two clear 4.5:1, which
+     the previous navy pair did not (3.97 and 3.09). */
+  --fg: #fafafa;
+  --fg-2: #d4d4d8;
+  --fg-muted: #a1a1aa;
+  --fg-subtle: #8b8b94;
+  --fg-caption: #7e7e88;
+  --card-raised: #1a1a1f;
+  --row-line: rgba(228, 228, 231, 0.05);
 
   --success: #4ade80;
   --success-bg: rgba(74, 222, 128, 0.1);
@@ -149,11 +174,11 @@
    * measured and fails as a categorical palette (P1 against P2 at ΔE 5.4 under
    * deuteranopia, and P4 is grey by design so it can never clear a chroma floor).
    */
-  --sev1-fg: #0a0e1a;
+  --sev1-fg: #09090b;
   --sev1-bg: #fb7185;
-  --sev2-fg: #0a0e1a;
+  --sev2-fg: #09090b;
   --sev2-bg: #fbbf24;
-  --sev3-fg: #0a0e1a;
+  --sev3-fg: #09090b;
   --sev3-bg: #5eead4;
   --sev4-fg: #c7cee3;
   --sev4-bg: rgba(148, 163, 184, 0.16);
@@ -1973,8 +1998,9 @@ h3 {
   padding: 48px;
   color: #ffffff;
   overflow: hidden;
-  /* SELISE blue into Oxford Blue. Deliberately NOT the source design's indigo/violet. */
-  background: linear-gradient(135deg, #0066b2, #001728);
+  /* The brand violet falling into near-black — the same two ends the rest of the
+     palette is built from, so the marketing panel is the product, not a poster. */
+  background: linear-gradient(135deg, #5b21b6 0%, #3b1578 45%, #16111f 100%);
 }
 @media (min-width: 900px) {
   .auth-panel-marketing {
@@ -5538,21 +5564,41 @@ h3 {
   font-size: 16px;
 }
 /* The text wordmark on the auth screen: name, strapline, nothing to load. */
+/*
+ * The login lockup reads left-to-right: mark, then name over strapline. Stacked,
+ * the mark floated above the wordmark with nothing tying them together and read
+ * as two separate things that happened to be nearby. A row is also how the
+ * sidebar sets it, so the first screen and every screen after agree.
+ */
 .auth-brandmark {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 13px;
+  row-gap: 0;
+  margin-bottom: 22px;
+}
+.auth-brandmark .brand-mark {
+  grid-row: span 2;
 }
 .auth-brandmark-name {
-  font-size: 24px;
+  font-size: 23px;
   font-weight: 700;
-  letter-spacing: -0.015em;
-  line-height: 1.1;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  align-self: end;
 }
 .auth-brandmark-sub {
   font-size: 12.5px;
   color: var(--fg-subtle);
+  align-self: start;
+  line-height: 1.3;
+}
+/* Under ~380px the strapline needs the whole width or it wraps to three lines. */
+@media (max-width: 380px) {
+  .auth-brandmark { column-gap: 11px; }
+  .auth-brandmark-name { font-size: 20px; }
+  .auth-brandmark-sub { font-size: 11.5px; }
 }
 .brand-lockup .sub {
   font-size: 11px;
@@ -5636,13 +5682,13 @@ h3 {
    area fill and resolved does not — identity never rests on hue alone. */
 
 :root {
-  --chart-opened: #0066b2;
+  --chart-opened: #5b21b6;
   --chart-resolved: #15803d;
 }
 :root[data-theme='dark'] {
   /* Stepped separately, not flipped: the app's own --success (#4ade80) sits at
-     L 0.80 and blows the lightness band on the navy card. */
-  --chart-opened: #2a8fd8;
+     L 0.80 and blows the lightness band on the dark card. */
+  --chart-opened: #a78bfa;
   --chart-resolved: #34a853;
 }
 
@@ -6220,4 +6266,34 @@ th a:focus-visible {
 }
 .table-wrap {
   scroll-padding-top: 44px; /* the sticky thead inside the scroller */
+}
+
+/* ------------------------------------------------- equal-height card rows ----
+ *
+ * `.grid` sets `align-items: start` so a short card never stretches to match a
+ * tall neighbour — right for mixed content, wrong for a row of peers. The three
+ * "issues by …" cards are the same question asked three ways, and unequal
+ * heights made them read as three unrelated blocks of differing importance.
+ * `.equal` opts a row back into stretching; `.three` fixes the track count so
+ * they stay one row until the viewport genuinely cannot hold it.
+ */
+.grid.equal {
+  align-items: stretch;
+}
+.grid.equal > .card {
+  display: flex;
+  flex-direction: column;
+}
+/* The body takes the slack, so the heads stay aligned across the row. */
+.grid.equal > .card > .card-body {
+  flex: 1;
+}
+.grid.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 1180px) {
+  .grid.three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .grid.three { grid-template-columns: minmax(0, 1fr); }
 }

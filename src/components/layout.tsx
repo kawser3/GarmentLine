@@ -74,12 +74,13 @@ const NAV: { group: DictKey; items: NavItem[] }[] = [
 ];
 
 /**
- * The mark: a running stitch that resolves into a check.
+ * The mark: a garment hanger.
  *
- * The two halves of what this app records — work done on the floor, and the
- * decision that a sample passed. Drawn inline rather than loaded as an image so
- * it inherits the theme and costs no request; public/favicon.svg is the same
- * glyph on a fixed blue tile, because a favicon cannot read a CSS variable.
+ * The one object that reads as "apparel" at 16px with no caption, which an
+ * abstract glyph does not. Stroked and geometric so it belongs to the same
+ * system as the rest of the interface, and drawn inline rather than loaded as
+ * an image so it inherits the theme — public/favicon.svg is the same path on a
+ * fixed violet tile, because a favicon cannot read a CSS variable.
  */
 export function BrandMark({ size = 26 }: { size?: number }) {
   return (
@@ -92,15 +93,16 @@ export function BrandMark({ size = 26 }: { size?: number }) {
       aria-label="GarmentLine"
     >
       <rect width="32" height="32" rx="7.5" fill="var(--primary)" />
-      <path
-        d="M7.6 16.9 L13.3 22.6 L24.6 9.6"
+      <g
         fill="none"
-        stroke="#fff"
-        strokeWidth="3.2"
+        stroke="var(--primary-fg)"
+        strokeWidth="2.1"
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeDasharray="6 3.2"
-      />
+      >
+        <path d="M16 12.4 V10.2 a2.4 2.4 0 1 1 2.4 -2.4" />
+        <path d="M16 12.4 L6.4 20.6 H25.6 Z" />
+      </g>
     </svg>
   );
 }

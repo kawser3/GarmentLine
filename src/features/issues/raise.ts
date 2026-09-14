@@ -62,7 +62,10 @@ export function detectRepeat(
       (i) =>
         i.Type === type &&
         i.LineId === lineId &&
-        new Date(i.CreatedDate ?? Date.now()).getTime() >= since,
+        /* RaisedAt is the floor date; CreatedDate is when the row was written.
+           A back-dated or imported issue must count in the window it actually
+           belongs to, or a repeat pattern reads as brand new. */
+        new Date(i.RaisedAt ?? i.CreatedDate ?? Date.now()).getTime() >= since,
     )
     .map((i) => i.ItemId);
   if (newItemId) ids.push(newItemId);
@@ -95,6 +98,10 @@ export function useRaiseIssue() {
         const created = await insertIssue.mutateAsync({
           ...input,
           Status: "Raised",
+          /* Raised now, by definition — the form has no back-date field. Written
+             explicitly all the same, so every issue carries a floor date and no
+             reader has to know which rows fall back to CreatedDate. */
+          RaisedAt: new Date().toISOString(),
           RaisedBy: user?.itemId ?? "",
           RaisedByName: displayName(user),
           ClosedAt: null,

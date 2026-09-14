@@ -220,6 +220,7 @@ export const FIELDS = {
     "OwnerName:String",
     "Department:String",
     "DueDate:DateTime",
+    "RaisedAt:DateTime",
     "RaisedBy:String",
     "RaisedByName:String",
     "SourceCommentId:String",

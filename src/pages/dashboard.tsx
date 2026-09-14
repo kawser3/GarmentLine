@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Badge, Card, Empty, ErrorAlert, Loading, Stat, TableWrap } from "@/components/ui";
+import { Badge, Card, ErrorAlert, Loading, Stat, TableWrap } from "@/components/ui";
+import { CategoryBars, CategoryPie, type CatPoint } from "@/components/charts";
 import { PageHead } from "@/components/layout";
 import {
   OPEN_STATUSES, buyers, costAssumptions, issues as issuesCrud,
@@ -15,6 +16,14 @@ import { formatDate } from "@/lib/format";
 function rank(counts: Map<string, number>, limit = 6) {
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit);
 }
+
+/** A tally as the chart components want it, biggest first. */
+function toPoints(counts: Map<string, number>, limit = 6): CatPoint[] {
+  return rank(counts, limit).map(([label, value]) => ({ key: label, label, value }));
+}
+
+/** Counts, not money — the chart default writes francs. */
+const countOf = (v: number) => String(v);
 
 function tally<T>(rows: T[], key: (r: T) => string | undefined): Map<string, number> {
   const m = new Map<string, number>();
@@ -55,10 +64,12 @@ export function DashboardPage() {
     () => visibleIssues(user, all.data ?? [], styles.data ?? [], lines.data ?? []),
     [user, all.data, styles.data, lines.data]);
 
-  /* "This month" in the brief's sense: the trailing 30 days, not a calendar boundary. */
+  /* "This month" in the brief's sense: the trailing 30 days, not a calendar
+     boundary — and measured from RaisedAt, when it happened on the floor, not
+     from CreatedDate, which is when the row reached the gateway. */
   const recent = useMemo(() => {
     const cut = Date.now() - 30 * 86400e3;
-    return scoped.filter((i) => new Date(i.CreatedDate ?? 0).getTime() >= cut);
+    return scoped.filter((i) => new Date(i.RaisedAt ?? i.CreatedDate ?? 0).getTime() >= cut);
   }, [scoped]);
 
   if (all.error) return <ErrorAlert error={all.error} />;
@@ -141,35 +152,42 @@ export function DashboardPage() {
           </Card>
         )}
 
-        <Card title={t("page.dashboard.byLine")} sub={t("page.dashboard.last30")}>
-          {byLine.size === 0 ? <Empty title={t("empty.nothingThisMonth")} /> : (
-            <ul className="plain">
-              {rank(byLine).map(([label, n]) => (
-                <li key={label}><strong>{label}</strong> — {n}</li>
-              ))}
-            </ul>
-          )}
-        </Card>
+        {/*
+          One row, three cards, equal height — `.grid.equal` stretches them, which
+          the default `align-items: start` does not, so a line with six entries no
+          longer makes the card beside it look unfinished.
 
-        <Card title={t("page.dashboard.byBuyer")} sub={t("page.dashboard.last30")}>
-          {byBuyer.size === 0 ? <Empty title={t("empty.nothingThisMonth")} /> : (
-            <ul className="plain">
-              {rank(byBuyer).map(([label, n]) => (
-                <li key={label}><strong>{label}</strong> — {n}</li>
-              ))}
-            </ul>
-          )}
-        </Card>
+          Bars for line and buyer because the question is "which is worst", and
+          ranked length answers that in one look. A pie for type because the
+          question there is "what is the mix" — a share of a whole, which is the
+          one thing a pie does better than a bar. Counts, so formatValue is
+          passed: the default writes money.
+        */}
+        <div className="grid equal three">
+          <Card title={t("page.dashboard.byLine")} sub={t("page.dashboard.last30")}>
+            <CategoryBars
+              data={toPoints(byLine)}
+              formatValue={countOf}
+              emptyLabel={t("empty.nothingThisMonth")}
+            />
+          </Card>
 
-        <Card title={t("page.dashboard.byType")} sub={t("page.dashboard.last30")}>
-          {byType.size === 0 ? <Empty title={t("empty.nothingThisMonth")} /> : (
-            <ul className="plain">
-              {rank(byType).map(([label, n]) => (
-                <li key={label}><strong>{label}</strong> — {n}</li>
-              ))}
-            </ul>
-          )}
-        </Card>
+          <Card title={t("page.dashboard.byBuyer")} sub={t("page.dashboard.last30")}>
+            <CategoryBars
+              data={toPoints(byBuyer)}
+              formatValue={countOf}
+              emptyLabel={t("empty.nothingThisMonth")}
+            />
+          </Card>
+
+          <Card title={t("page.dashboard.byType")} sub={t("page.dashboard.last30")}>
+            <CategoryPie
+              data={toPoints(byType)}
+              centerLabel={String(recent.length)}
+              emptyLabel={t("empty.nothingThisMonth")}
+            />
+          </Card>
+        </div>
 
         {canSeeCostImpact(user) && (
           <Card

@@ -93,6 +93,10 @@ export interface Issue extends SystemFields {
   Title: string; Description: string; Type: IssueType; Severity: Severity; Status: Status;
   StyleId: string; LineId: string; BuyerId: string; SampleVersionId: string;
   OwnerId: string; OwnerName: string; Department: Department;
+  /** When it was raised on the floor. CreatedDate is when the ROW was written —
+   *  the two differ for anything seeded, imported or back-dated, and every
+   *  "last 30 days" figure means this one. */
+  RaisedAt: string | null;
   DueDate: string; RaisedBy: string; RaisedByName: string;
   SourceCommentId: string; ClosedAt: string | null;
 }
@@ -133,7 +137,7 @@ const F = {
   ApprovalRecord: "ItemId SampleVersionId StyleId Decision ActorId ActorName DecidedAt Note",
   /* CreatedDate is gateway-stamped at insert; without it in the projection every row
    * arrives with the field undefined, and any "last N days" filter silently empties. */
-  Issue: "ItemId CreatedDate Title Description Type Severity Status StyleId LineId BuyerId SampleVersionId " +
+  Issue: "ItemId CreatedDate RaisedAt Title Description Type Severity Status StyleId LineId BuyerId SampleVersionId " +
          "OwnerId OwnerName Department DueDate RaisedBy RaisedByName SourceCommentId ClosedAt",
   IssueEvent: "ItemId IssueId Kind ActorId ActorName At Message FromStatus ToStatus EvidenceFileIds",
   BuyerComment: "ItemId StyleId SampleVersionId RawText Channel ReceivedAt ParsedAt ParsedBy",
