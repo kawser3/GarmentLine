@@ -6,6 +6,8 @@ import {
   type ApprovalRecord, type Decision,
 } from "@/features/data/garment-schemas";
 import { BuyerCommentsPanel } from "@/features/comments/buyer-comments";
+import { notifyRoles, sendSampleDecisionMail } from "@/features/notify/blocks-push";
+import { issues as issuesCrud } from "@/features/data/garment-schemas";
 import { displayName } from "@/features/issues/history";
 import { canApproveSample, useAuthStore } from "@/stores/auth";
 import { useI18nStore } from "@/features/i18n/i18n";
@@ -29,6 +31,7 @@ export function StyleSamplesPage() {
   const versions = sampleVersions.useAll();
   const records = approvalsCrud.useAll();
   const buyerList = buyers.useAll();
+  const allIssues = issuesCrud.useAll();
 
   const addRecord = approvalsCrud.useCreate();
   const updateVersion = sampleVersions.useUpdate();
@@ -36,6 +39,7 @@ export function StyleSamplesPage() {
   const [note, setNote] = useState("");
   const [busyOn, setBusyOn] = useState("");
   const [failure, setFailure] = useState<unknown>(null);
+  const [pushNote, setPushNote] = useState("");
 
   const style = useMemo(
     () => (styles.data ?? []).find((s) => s.ItemId === styleId), [styles.data, styleId]);
@@ -79,13 +83,14 @@ export function StyleSamplesPage() {
        * only a cache for list screens - if this second write fails the decision still
        * stands in the trail, which is the direction the brief requires the risk to fall.
        */
+      const decidedAt = new Date().toISOString();
       await addRecord.mutateAsync({
         SampleVersionId: versionId,
         StyleId: styleId,
         Decision: decision,
         ActorId: user?.itemId ?? "",
         ActorName: displayName(user),
-        DecidedAt: new Date().toISOString(),
+        DecidedAt: decidedAt,
         Note: note.trim(),
       });
       await updateVersion.mutateAsync({
@@ -93,6 +98,42 @@ export function StyleSamplesPage() {
         input: { Status: decision },
       });
       setNote("");
+
+      /*
+       * Notice, not record: the mail to the buyer and the notification to the
+       * factory fire after the decision stands. allSettled because a dead SMTP
+       * must not unwind a decision of record — the note below reports honestly.
+       */
+      const version = mine.find((v) => v.ItemId === versionId);
+      const openOnStyle = (allIssues.data ?? []).filter(
+        (i) => i.StyleId === styleId && i.Status !== "Closed" && i.Status !== "Verified",
+      ).length;
+      const [mail] = await Promise.allSettled([
+        buyer?.ContactEmail
+          ? sendSampleDecisionMail({
+              to: buyer.ContactEmail,
+              buyerName: buyer.Name,
+              styleCode: style.StyleCode,
+              sampleLabel: version ? `${version.Type} v${version.VersionNo}` : "sample",
+              decision,
+              decidedBy: `${displayName(user)} (Merchandiser)`,
+              decidedAt: `${formatDate(decidedAt, locale)} ${formatClock(decidedAt, locale)}`,
+              openIssues: openOnStyle,
+              note: note.trim() || undefined,
+            })
+          : Promise.resolve({ ok: false, error: "no buyer contact email" }),
+        notifyRoles(
+          ["factory-manager", "merchandiser"],
+          `Sample ${decision.toLowerCase()}: ${style.StyleCode}`,
+          `${displayName(user)} recorded ${decision} on ${style.StyleCode} ` +
+            `${version ? `${version.Type} v${version.VersionNo}` : ""}.`,
+        ),
+      ]);
+      setPushNote(
+        mail.status === "fulfilled" && mail.value.ok
+          ? `Decision stamped. Buyer notice emailed to ${buyer?.ContactEmail}.`
+          : "Decision stamped. Buyer mail could not be sent — the register stands; resend from Mail.",
+      );
     } catch (e) {
       setFailure(e);
     } finally {
@@ -114,6 +155,7 @@ export function StyleSamplesPage() {
             ? <Badge tone="success">{approved.Type} v{approved.VersionNo}</Badge>
             : <Badge tone="danger">None approved — bulk must not start</Badge>}
         </p>
+        {pushNote && <p className="muted">{pushNote}</p>}
         {!mayApprove && (
           <p className="muted">
             Marking a sample approved is a decision of record. Your role can read this

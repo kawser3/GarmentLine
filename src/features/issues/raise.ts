@@ -16,6 +16,7 @@ import {
   type Issue, type IssueType, type RepeatAlert,
 } from "@/features/data/garment-schemas";
 import { displayName, issueEvent } from "@/features/issues/history";
+import { notifyRoles } from "@/features/notify/blocks-push";
 import { useAuthStore } from "@/stores/auth";
 
 export const REPEAT_WINDOW_DAYS = 10;
@@ -128,13 +129,20 @@ export function useRaiseIssue() {
               IssueType: input.Type,
               WindowDays: REPEAT_WINDOW_DAYS,
               Occurrences: repeat.occurrences,
-              DetectedAt: now,
               IssueIds: repeat.issueIds,
               Message: message,
               Acknowledged: false,
               AcknowledgedBy: "",
             });
             alertId = alert?.itemId;
+            /* First time the pattern is seen, the GM hears about it in-app too.
+             * Fire-and-forget on purpose: the alert row is the record, the
+             * notification is a door-knock. */
+            void notifyRoles(
+              ["factory-manager"],
+              `Repeat defect: ${input.Type}`,
+              message,
+            );
           }
         }
         return { issueId, repeat: repeat ? { ...repeat, alertId } : null };
