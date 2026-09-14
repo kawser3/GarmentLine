@@ -11,7 +11,7 @@ import { notifyRoles, sendSampleDecisionMail } from "@/features/notify/blocks-pu
 import { issues as issuesCrud } from "@/features/data/garment-schemas";
 import { displayName } from "@/features/issues/history";
 import { canApproveSample, useAuthStore } from "@/stores/auth";
-import { useI18nStore } from "@/features/i18n/i18n";
+import { useI18nStore, useT } from "@/features/i18n/i18n";
 import { formatClock, formatDate } from "@/lib/format";
 
 /**
@@ -27,6 +27,7 @@ export function StyleSamplesPage() {
   const { styleId = "" } = useParams();
   const user = useAuthStore((s) => s.user);
   const locale = useI18nStore((s) => s.locale);
+  const t = useT();
 
   const styles = stylesCrud.useAll();
   const versions = sampleVersions.useAll();
@@ -73,9 +74,9 @@ export function StyleSamplesPage() {
 
   if (styles.error) return <ErrorAlert error={styles.error} />;
   if (styles.isPending || versions.isPending || records.isPending) {
-    return <Loading label="Loading sample history…" />;
+    return <Loading label={t("sample.loading")} />;
   }
-  if (!style) return <Empty title="Style not found" />;
+  if (!style) return <Empty title={t("sample.notFound")} />;
 
   const buyer = (buyerList.data ?? []).find((b) => b.ItemId === style.BuyerId);
   const approved = mine.find((v) => (recordsFor.get(v.ItemId) ?? [])[0]?.Decision === "Approved");
@@ -179,29 +180,29 @@ export function StyleSamplesPage() {
         span
         title={`${style.StyleCode} — ${style.Name}`}
         sub={`${buyer?.Name ?? "Unknown buyer"} · ${style.Season} · ${style.OrderQty.toLocaleString()} pcs`}
-        actions={<Link to="/samples"><Button variant="quiet" size="sm">Back to samples</Button></Link>}
+        actions={<Link to="/samples"><Button variant="quiet" size="sm">{t("sample.back")}</Button></Link>}
       >
         <p>
-          <strong>Approved version: </strong>
+          <strong>{t("sample.approvedVersion")} </strong>
           {approved
             ? <Badge tone="success">{approved.Type} v{approved.VersionNo}</Badge>
-            : <Badge tone="danger">None approved — bulk must not start</Badge>}
+            : <Badge tone="danger">{t("sample.noneApproved")}</Badge>}
         </p>
         {pushNote && <p className="muted">{pushNote}</p>}
 
       </Card>
 
-      <Card span title="Versions and decisions" sub="Every decision is kept; none can be edited or removed.">
+      <Card span title={t("sample.versionsCard")} sub={t("sample.versionsSub")}>
         {failure ? <ErrorAlert error={failure} /> : null}
         {mine.length === 0 ? (
-          <Empty title="No sample versions recorded for this style" />
+          <Empty title={t("sample.noVersions")} />
         ) : (
           <TableWrap>
 
               <thead>
                 <tr>
-                  <th>Version</th><th>Submitted</th><th>Standing decision</th>
-                  <th>History</th>{mayApprove && <th>Decide</th>}
+                  <th>{t("sample.version")}</th><th>{t("col.submitted")}</th><th>{t("sample.standing")}</th>
+                  <th>{t("col.history")}</th>{mayApprove && <th>{t("sample.decide")}</th>}
                 </tr>
               </thead>
               <tbody>
@@ -217,7 +218,7 @@ export function StyleSamplesPage() {
                           ? <Badge tone={latest.Decision === "Approved" ? "success" : "danger"}>
                               {latest.Decision}
                             </Badge>
-                          : <Badge tone="warning">Awaiting decision</Badge>}
+                          : <Badge tone="warning">{t("sample.awaiting")}</Badge>}
                       </td>
                       <td>
                         {history.length === 0 ? <span className="muted">—</span> : (
@@ -240,14 +241,14 @@ export function StyleSamplesPage() {
                               disabled={!!busyOn}
                               onClick={() => decide(v.ItemId, "Approved")}
                             >
-                              Approve
+                              {t("sample.approve")}
                             </Button>
                             <Button
                               variant="danger" size="sm"
                               disabled={!!busyOn}
                               onClick={() => decide(v.ItemId, "Rejected")}
                             >
-                              Reject
+                              {t("sample.reject")}
                             </Button>
                           </div>
                         </td>
@@ -259,12 +260,12 @@ export function StyleSamplesPage() {
             </TableWrap>
         )}
         {mayApprove && (
-          <Field label="Note to attach to the next decision">
+          <Field label={t("sample.noteLabel")}>
             <input
               className="input"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Reason the buyer gave, or the condition attached"
+              placeholder={t("sample.notePlaceholder")}
             />
           </Field>
         )}
@@ -273,26 +274,26 @@ export function StyleSamplesPage() {
       {mayApprove && (
         <Card
           span
-          title="Submit a sample version"
-          sub="The version number follows the type; the decision on it is a separate, recorded act."
+          title={t("sample.submitCard")}
+          sub={t("sample.submitSub")}
         >
           <div className="stack">
             <div className="grid-2">
-              <Field label="Type">
+              <Field label={t("sample.type")}>
                 <select className="input" value={svType} onChange={(e) => setSvType(e.target.value as SampleType)}>
                   {SAMPLE_TYPES.map((v) => <option key={v} value={v}>{v}</option>)}
                 </select>
               </Field>
-              <Field label="Note">
+              <Field label={t("sample.note")}>
                 <input
                   className="input" value={svNotes} onChange={(e) => setSvNotes(e.target.value)}
-                  placeholder="What changed since the last version"
+                  placeholder={t("sample.changedPlaceholder")}
                 />
               </Field>
             </div>
             <div>
               <Button variant="primary" disabled={svBusy} onClick={() => void submitVersion()}>
-                {svBusy ? "Submitting…" : "Submit version"}
+                {svBusy ? t("sample.submitting") : t("sample.submit")}
               </Button>
             </div>
           </div>

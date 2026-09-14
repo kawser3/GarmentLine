@@ -23,7 +23,7 @@ import { displayName } from "@/features/issues/history";
 import { useRaiseIssue } from "@/features/issues/raise";
 import { parseBuyerComment, type ParsedAction } from "@/features/comments/parse-comment";
 import { canAcceptActionItem, useAuthStore } from "@/stores/auth";
-import { useI18nStore } from "@/features/i18n/i18n";
+import { useI18nStore, useT } from "@/features/i18n/i18n";
 import { formatDate } from "@/lib/format";
 
 const CHANNELS = ["Email", "WhatsApp", "TechPack"] as const;
@@ -37,6 +37,7 @@ interface Draft extends ParsedAction {
 export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buyerId: string }) {
   const user = useAuthStore((s) => s.user);
   const locale = useI18nStore((s) => s.locale);
+  const t = useT();
   const mayWork = canAcceptActionItem(user);
 
   const comments = buyerComments.useAll();
@@ -83,7 +84,7 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
     [items.data, activeComment],
   );
 
-  if (comments.isPending || versions.isPending) return <Loading label="Loading buyer comments…" />;
+  if (comments.isPending || versions.isPending) return <Loading label={t("ai.loading")} />;
 
   async function recordAndParse() {
     setBusy(true);
@@ -202,29 +203,29 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
   return (
     <Card
       span
-      title="Buyer comments → action list"
-      sub="Paste the comment as it arrived. The AI proposes; the merchandiser decides."
+      title={t("ai.card")}
+      sub={t("ai.cardSub")}
     >
       {failure ? <ErrorAlert error={failure} /> : null}
 
       {mayWork ? (
         <div className="stack">
           <div className="grid-2">
-            <Field label="Channel">
+            <Field label={t("ai.channel")}>
               <select className="input" value={channel} onChange={(e) => setChannel(e.target.value as typeof channel)}>
                 {CHANNELS.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </Field>
-            <Field label="Sample version">
+            <Field label={t("ai.sampleVersion")}>
               <select className="input" value={versionId} onChange={(e) => setVersionId(e.target.value)}>
-                <option value="">Latest</option>
+                <option value="">{t("ai.latest")}</option>
                 {styleVersions.map((v) => (
                   <option key={v.ItemId} value={v.ItemId}>{v.Type} v{v.VersionNo}</option>
                 ))}
               </select>
             </Field>
           </div>
-          <Field label="Buyer comment (Banglish is fine)">
+          <Field label={t("ai.commentLabel")}>
             <textarea
               className="input"
               rows={3}
@@ -235,7 +236,7 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
           </Field>
           <div>
             <Button variant="primary" disabled={busy || !text.trim()} onClick={recordAndParse}>
-              {busy ? "Working…" : "Record & propose actions"}
+              {busy ? t("ai.working") : t("ai.record")}
             </Button>
           </div>
         </div>
@@ -245,7 +246,7 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
         <div className="stack">
           <p>
             <Badge tone={engineNote.startsWith("Proposed by the Blocks AI") ? "success" : "warning"}>
-              {engineNote.startsWith("Proposed by the Blocks AI") ? "Blocks AI agent" : "Fallback parser"}
+              {engineNote.startsWith("Proposed by the Blocks AI") ? t("ai.engineAgent") : t("ai.engineFallback")}
             </Badge>{" "}
             <span className="muted">{engineNote}</span>
           </p>
@@ -253,8 +254,8 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
 
               <thead>
                 <tr>
-                  <th>#</th><th>Action (editable)</th><th>Part</th><th>Dept</th>
-                  <th>Urgency</th><th>Type</th><th>Decision</th>
+                  <th>#</th><th>{t("ai.colAction")}</th><th>{t("ai.colPart")}</th><th>{t("ai.colDept")}</th>
+                  <th>{t("ai.colUrgency")}</th><th>{t("col.type")}</th><th>{t("ai.colDecision")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -300,7 +301,7 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
                     <td>
                       {d.decided ? (
                         d.decided === "Accepted" && d.issueId ? (
-                          <>Accepted → <Link to={`/issues/${d.issueId}`}>issue</Link></>
+                          <>{t("ai.accepted")} → <Link to={`/issues/${d.issueId}`}>{t("ai.issue")}</Link></>
                         ) : (
                           <Badge tone={d.decided === "Accepted" ? "success" : "danger"}>{d.decided}</Badge>
                         )
@@ -327,14 +328,14 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
       )}
 
       <div className="stack">
-        <h3>Recorded comments</h3>
+        <h3>{t("ai.recorded")}</h3>
         {mine.length === 0 ? (
-          <Empty title="No buyer comments recorded for this style" />
+          <Empty title={t("ai.noComments")} />
         ) : (
           <TableWrap>
 
               <thead>
-                <tr><th>Received</th><th>Channel</th><th>Comment</th><th>Parsed</th></tr>
+                <tr><th>{t("ai.received")}</th><th>{t("ai.channel")}</th><th>{t("ai.comment")}</th><th>{t("ai.parsed")}</th></tr>
               </thead>
               <tbody>
                 {mine.map((c) => {
@@ -349,10 +350,10 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
                         {c.ParsedAt ? (
                           <span>
                             {accepted}/{its.length} accepted
-                            <div className="muted">by {c.ParsedBy === "blocks-ai-agent" ? "Blocks AI agent" : c.ParsedBy}</div>
+                            <div className="muted">{c.ParsedBy === "blocks-ai-agent" ? t("ai.engineAgent") : c.ParsedBy}</div>
                           </span>
                         ) : (
-                          <Badge tone="warning">Not parsed</Badge>
+                          <Badge tone="warning">{t("ai.notParsed")}</Badge>
                         )}
                       </td>
                     </tr>
