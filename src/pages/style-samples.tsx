@@ -105,6 +105,8 @@ export function StyleSamplesPage() {
   }
 
   async function decide(versionId: string, decision: Decision) {
+    /* Narrowed by the `!style` early return above, but not through this closure. */
+    if (!style) return;
     setBusyOn(versionId + decision);
     setFailure(null);
     try {

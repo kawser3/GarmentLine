@@ -6060,3 +6060,72 @@ h3 {
   white-space: nowrap;
   max-width: 320px;
 }
+
+/* ------------------------------------------------- detail-card primitives
+ *
+ * The three classes below were written into the pages but never defined, so the
+ * issue History card and the sample Versions card fell back to browser defaults:
+ * the decision lists carried bullets and a 40px indent, the button rows stacked
+ * one per line, and the issue metadata rendered as an unstyled <dl>. Defining
+ * them here rather than rewriting the markup keeps the semantic elements (<dl>,
+ * <ol>) that make the append-only history readable without CSS at all.
+ */
+
+/* Key/value metadata on a detail page. Labels in the quiet uppercase the
+ * meta-grid already uses, so a detail card reads the same wherever it appears. */
+.kv {
+  display: grid;
+  grid-template-columns: minmax(110px, max-content) 1fr;
+  gap: 10px 20px;
+  margin: 16px 0 0;
+}
+.kv dt {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  align-self: center;
+}
+.kv dd {
+  margin: 0;
+  min-width: 0;
+  font-size: 13.5px;
+  color: var(--fg);
+  overflow-wrap: anywhere;
+}
+/* Two columns cannot hold a label and a style name side by side on a phone. */
+@media (max-width: 560px) {
+  .kv { grid-template-columns: 1fr; gap: 2px 0; }
+  .kv dd { margin-bottom: 12px; }
+  .kv dd:last-child { margin-bottom: 0; }
+}
+
+/* A list that carries its own structure — decisions, rankings — and wants no
+ * bullet or indent from the browser. */
+.plain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.plain > li + li {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+/* Inside a table cell the divider competes with the row rules, so drop it. */
+td .plain > li + li {
+  margin-top: 6px;
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* Buttons that act on the thing beside them: a row, or the field above. */
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+td > .row-actions {
+  gap: 6px;
+}

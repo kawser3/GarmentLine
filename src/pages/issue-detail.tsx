@@ -136,14 +136,14 @@ export function IssueDetailPage() {
           <ol className="timeline">
             {timeline.map((e) => (
               <li key={e.ItemId}>
-                <div className="timeline-head">
+                <div className="tl-head">
                   <strong>{e.ActorName}</strong>
-                  <span>{formatDate(e.At, locale)} {formatClock(e.At, locale)}</span>
+                  <span className="tl-when">{formatDate(e.At, locale)} {formatClock(e.At, locale)}</span>
                   <Badge tone={e.Kind === "Rejected" ? "danger" : "info"}>{e.Kind}</Badge>
                 </div>
                 <div>{e.Message}</div>
                 {e.FromStatus && e.ToStatus ? (
-                  <div className="timeline-sub">
+                  <div className="tl-change">
                     {STATUS_LABEL[e.FromStatus as Status] ?? e.FromStatus} →{" "}
                     {STATUS_LABEL[e.ToStatus as Status] ?? e.ToStatus}
                   </div>

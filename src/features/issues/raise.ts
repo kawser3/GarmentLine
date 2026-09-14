@@ -134,7 +134,7 @@ export function useRaiseIssue() {
               Acknowledged: false,
               AcknowledgedBy: "",
             });
-            alertId = alert?.itemId;
+            alertId = alert?.itemId ?? undefined;
             /* First time the pattern is seen, the GM hears about it in-app too.
              * Fire-and-forget on purpose: the alert row is the record, the
              * notification is a door-knock. */

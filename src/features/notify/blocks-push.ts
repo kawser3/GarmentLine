@@ -10,7 +10,7 @@
 import { env } from "@/lib/env";
 import { getAccessToken } from "@/lib/auth-token";
 
-async function post<T>(path: string, body: unknown): Promise<{ ok: boolean; error?: string }> {
+async function post(path: string, body: unknown): Promise<{ ok: boolean; error?: string }> {
   try {
     const token = getAccessToken();
     const res = await fetch(`${env.apiUrl}${path}`, {

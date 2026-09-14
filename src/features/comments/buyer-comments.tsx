@@ -17,7 +17,7 @@ import { Badge, Button, Card, Empty, ErrorAlert, Field, Loading, TableWrap } fro
 import {
   actionItems, buyerComments, linesCrud, sampleVersions,
   DEPARTMENTS, SEVERITIES, ISSUE_TYPES,
-  type ActionItem, type BuyerComment, type Department, type IssueType, type Severity,
+  type ActionItem, type Department, type IssueType, type Severity,
 } from "@/features/data/garment-schemas";
 import { displayName } from "@/features/issues/history";
 import { useRaiseIssue } from "@/features/issues/raise";
