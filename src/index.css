@@ -6269,9 +6269,34 @@ th a:focus-visible {
 }
 
 
-/* A chart whose natural width is smaller than the card it sits in. Capped and
-   left-aligned so the empty space reads as margin rather than as a layout that
-   failed to fill. */
-.chart-inset {
-  max-width: 620px;
+
+/* ------------------------------------------------- equal-height card rows ----
+ *
+ * `.grid` sets `align-items: start` so a short card never stretches to match a
+ * tall neighbour — right for mixed content, wrong for a row of peers. The three
+ * "issues by …" cards are one question asked three ways; at three different
+ * heights they read as three unrelated blocks of differing importance.
+ *
+ * `.three` pins the track count so they stay side by side, and steps down before
+ * a bar row hits its ~300px floor and starts truncating labels.
+ */
+.grid.equal {
+  align-items: stretch;
+}
+.grid.equal > .card {
+  display: flex;
+  flex-direction: column;
+}
+/* The body takes the slack, so the card heads stay aligned across the row. */
+.grid.equal > .card > .card-body {
+  flex: 1;
+}
+.grid.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 1180px) {
+  .grid.three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .grid.three { grid-template-columns: minmax(0, 1fr); }
 }

@@ -153,22 +153,25 @@ export function DashboardPage() {
         )}
 
         {/*
-          Full width, one per row. Three across squeezed each chart into a third
-          of the page, where a ranked bar has no room to BE ranked — the bars
-          were stubs and the labels truncated, which is the one thing a bar chart
-          must not do. Across the full width the longest bar is unmistakable and
-          every line name is readable, which is the whole question these three
-          cards answer.
+          Side by side, equal height. A row of peers has to stretch — `.grid`
+          defaults to `align-items: start`, and left alone the three cards ended
+          at three different heights and read as three unrelated blocks of
+          differing importance.
+
+          Five entries each, not six: a bar row needs ~300px to keep its label
+          off its track, so in a third of the page the list has to be short
+          enough that every bar still has room to be compared. The grid drops to
+          two columns at 1180px and one at 760px, before that floor is hit.
 
           Bars for line and buyer because the question is "which is worst" and
           length answers that in one look. A donut for type because that question
           is "what is the mix" — a share of a whole, the one thing a donut does
           better than a bar. Counts, so formatValue is passed: the default is money.
         */}
-        <div className="grid one">
+        <div className="grid equal three">
           <Card title={t("page.dashboard.byLine")} sub={t("page.dashboard.last30")}>
             <CategoryBars
-              data={toPoints(byLine)}
+              data={toPoints(byLine, 5)}
               formatValue={countOf}
               emptyLabel={t("empty.nothingThisMonth")}
             />
@@ -176,23 +179,18 @@ export function DashboardPage() {
 
           <Card title={t("page.dashboard.byBuyer")} sub={t("page.dashboard.last30")}>
             <CategoryBars
-              data={toPoints(byBuyer)}
+              data={toPoints(byBuyer, 5)}
               formatValue={countOf}
               emptyLabel={t("empty.nothingThisMonth")}
             />
           </Card>
 
           <Card title={t("page.dashboard.byType")} sub={t("page.dashboard.last30")}>
-            {/* The donut pairs a fixed-width dial with a legend. Given the whole
-                page that legend would run for a thousand pixels of white space,
-                so the pair is capped and sits left — deliberate, not stranded. */}
-            <div className="chart-inset">
-              <CategoryPie
-                data={toPoints(byType)}
-                centerLabel={String(recent.length)}
-                emptyLabel={t("empty.nothingThisMonth")}
-              />
-            </div>
+            <CategoryPie
+              data={toPoints(byType, 5)}
+              centerLabel={String(recent.length)}
+              emptyLabel={t("empty.nothingThisMonth")}
+            />
           </Card>
         </div>
 
