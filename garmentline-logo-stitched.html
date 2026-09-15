@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GarmentLine logo — topstitched seam</title>
+<style>
+  :root {
+    --green: #1D9E75;
+    --ink: #12211C;
+    --paper: #FFFFFF;
+    --page: #F2F4F3;
+    --rule: #DCE2E0;
+    --muted: #5C6B66;
+    --ease: cubic-bezier(.6, .02, .18, 1);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 72px; }
+
+  h1 { font-size: 30px; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 6px; }
+  .lede { color: var(--muted); margin: 0 0 32px; max-width: 58ch; }
+  h2 { font-size: 15px; font-weight: 500; margin: 40px 0 12px; }
+  p { max-width: 68ch; }
+
+  /* ---------- the logo itself ---------- */
+
+  .gl-logo { display: block; }
+  .gl-logo .gl-panel-a { fill: var(--gl-ink, #12211C); }
+  .gl-logo .gl-panel-b { fill: var(--gl-green, #1D9E75); }
+  .gl-logo .gl-stitch  { fill: var(--gl-green, #1D9E75); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .gl-logo--animate .gl-panel-a { animation: gl-seam-a 900ms var(--ease) both; }
+    .gl-logo--animate .gl-panel-b { animation: gl-seam-b 900ms var(--ease) both; }
+    .gl-logo--animate .gl-stitch  { animation: gl-stitch 320ms ease-out both; }
+    .gl-logo--animate .gl-stitch:nth-of-type(1) { animation-delay: 640ms; }
+    .gl-logo--animate .gl-stitch:nth-of-type(2) { animation-delay: 760ms; }
+    .gl-logo--animate .gl-stitch:nth-of-type(3) { animation-delay: 880ms; }
+    .gl-logo--animate .gl-stitch:nth-of-type(4) { animation-delay: 1000ms; }
+
+    .gl-logo--loop .gl-panel-a { animation: gl-seam-a-loop 4.4s var(--ease) infinite; }
+    .gl-logo--loop .gl-panel-b { animation: gl-seam-b-loop 4.4s var(--ease) infinite; }
+    .gl-logo--loop .gl-stitch  { animation: gl-stitch-loop 4.4s ease-in-out infinite; }
+    .gl-logo--loop .gl-stitch:nth-of-type(2) { animation-delay: 120ms; }
+    .gl-logo--loop .gl-stitch:nth-of-type(3) { animation-delay: 240ms; }
+    .gl-logo--loop .gl-stitch:nth-of-type(4) { animation-delay: 360ms; }
+  }
+
+  @keyframes gl-seam-a { from { transform: translateX(-24px); } to { transform: none; } }
+  @keyframes gl-seam-b { from { transform: translateX(24px); }  to { transform: none; } }
+  @keyframes gl-stitch { from { opacity: 0; } to { opacity: 1; } }
+
+  @keyframes gl-seam-a-loop {
+    0%   { transform: translateX(-24px); }
+    24%  { transform: none; }
+    86%  { transform: none; }
+    100% { transform: translateX(-24px); }
+  }
+  @keyframes gl-seam-b-loop {
+    0%   { transform: translateX(24px); }
+    24%  { transform: none; }
+    86%  { transform: none; }
+    100% { transform: translateX(24px); }
+  }
+  @keyframes gl-stitch-loop {
+    0%, 26%  { opacity: 0; }
+    40%, 84% { opacity: 1; }
+    100%     { opacity: 0; }
+  }
+
+  /* ---------- stage ---------- */
+
+  .stage {
+    position: relative;
+    height: 300px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+  }
+
+  .stage__dark {
+    position: absolute;
+    inset: 0;
+    background: var(--ink);
+    clip-path: polygon(50% 0%, 44% 16%, 56% 33%, 44% 50%, 56% 66%, 44% 83%, 50% 100%, 100% 100%, 100% 0%);
+  }
+
+  .stage__slot {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .stage__slot--light { left: 24%; }
+  .stage__slot--dark  { left: 76%; }
+
+  .stage__caption { margin: 14px 0 0; font-size: 13px; color: var(--muted); }
+  .stage__slot--dark .stage__caption { color: #8FA19B; }
+
+  .controls { display: flex; gap: 10px; align-items: center; margin-top: 16px; }
+
+  button {
+    font: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 7px 13px;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--green); }
+  button:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+  /* ---------- size ladder ---------- */
+
+  .sizes {
+    display: flex;
+    align-items: flex-end;
+    gap: 28px;
+    flex-wrap: wrap;
+    padding: 24px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 16px;
+  }
+  .sizes figure { margin: 0; text-align: center; }
+  .sizes figcaption { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  .lockup {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .lockup em { font-style: normal; color: var(--green); }
+
+  pre {
+    margin: 0;
+    padding: 18px 20px;
+    background: var(--ink);
+    color: #D6E2DD;
+    border-radius: 14px;
+    overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+  pre .c { color: #7F948D; }
+  pre .g { color: #49C79B; }
+
+  @media (max-width: 680px) {
+    .stage { height: auto; display: grid; grid-template-columns: 1fr; }
+    .stage__dark { position: relative; inset: auto; clip-path: none; height: 180px; grid-row: 2; }
+    .stage__slot { position: static; transform: none; padding: 32px 0; }
+    .stage__slot--dark { position: absolute; left: 50%; top: auto; bottom: 90px; transform: translate(-50%, 50%); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>GarmentLine</h1>
+  <p class="lede">The topstitched cut. Panels meet first, then the thread sets across the seam in sequence.</p>
+
+  <div class="stage">
+    <div class="stage__dark"></div>
+
+    <div class="stage__slot stage__slot--light">
+      <svg class="gl-logo gl-logo--animate js-mark" width="112" height="112" viewBox="0 0 100 100" role="img" aria-label="GarmentLine">
+        <path class="gl-panel-a" d="M20 0 L45.5 0 L35.5 25 L55.5 50 L35.5 75 L45.5 100 L20 100 A20 20 0 0 1 0 80 L0 20 A20 20 0 0 1 20 0 Z"/>
+        <path class="gl-panel-b" d="M54.5 0 L80 0 A20 20 0 0 1 100 20 L100 80 A20 20 0 0 1 80 100 L54.5 100 L44.5 75 L64.5 50 L44.5 25 Z"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(45 12.5) rotate(21.8)"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(50 37.5) rotate(-38.7)"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(50 62.5) rotate(38.7)"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(45 87.5) rotate(-21.8)"/>
+      </svg>
+      <p class="stage__caption">Ink on light</p>
+    </div>
+
+    <div class="stage__slot stage__slot--dark" style="--gl-ink:#FFFFFF">
+      <svg class="gl-logo gl-logo--animate js-mark" width="112" height="112" viewBox="0 0 100 100" role="img" aria-label="GarmentLine">
+        <path class="gl-panel-a" d="M20 0 L45.5 0 L35.5 25 L55.5 50 L35.5 75 L45.5 100 L20 100 A20 20 0 0 1 0 80 L0 20 A20 20 0 0 1 20 0 Z"/>
+        <path class="gl-panel-b" d="M54.5 0 L80 0 A20 20 0 0 1 100 20 L100 80 A20 20 0 0 1 80 100 L54.5 100 L44.5 75 L64.5 50 L44.5 25 Z"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(45 12.5) rotate(21.8)"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(50 37.5) rotate(-38.7)"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(50 62.5) rotate(38.7)"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(45 87.5) rotate(-21.8)"/>
+      </svg>
+      <p class="stage__caption">White on dark</p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button type="button" id="replay">Play the seam</button>
+    <button type="button" id="loop">Loop it</button>
+  </div>
+
+  <h2>Sizes</h2>
+  <div class="sizes">
+    <figure>
+      <div class="lockup">
+        <svg class="gl-logo" width="34" height="34" viewBox="0 0 100 100" role="img" aria-label="GarmentLine">
+          <path class="gl-panel-a" d="M20 0 L45.5 0 L35.5 25 L55.5 50 L35.5 75 L45.5 100 L20 100 A20 20 0 0 1 0 80 L0 20 A20 20 0 0 1 20 0 Z"/>
+          <path class="gl-panel-b" d="M54.5 0 L80 0 A20 20 0 0 1 100 20 L100 80 A20 20 0 0 1 80 100 L54.5 100 L44.5 75 L64.5 50 L44.5 25 Z"/>
+          <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(45 12.5) rotate(21.8)"/>
+          <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(50 37.5) rotate(-38.7)"/>
+          <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(50 62.5) rotate(38.7)"/>
+          <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(45 87.5) rotate(-21.8)"/>
+        </svg>
+        <span>Garment<em>Line</em></span>
+      </div>
+      <figcaption>Lockup</figcaption>
+    </figure>
+
+    <figure>
+      <svg class="gl-logo" width="48" height="48" viewBox="0 0 100 100" role="img" aria-label="GarmentLine">
+        <path class="gl-panel-a" d="M20 0 L45.5 0 L35.5 25 L55.5 50 L35.5 75 L45.5 100 L20 100 A20 20 0 0 1 0 80 L0 20 A20 20 0 0 1 20 0 Z"/>
+        <path class="gl-panel-b" d="M54.5 0 L80 0 A20 20 0 0 1 100 20 L100 80 A20 20 0 0 1 80 100 L54.5 100 L44.5 75 L64.5 50 L44.5 25 Z"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(45 12.5) rotate(21.8)"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(50 37.5) rotate(-38.7)"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(50 62.5) rotate(38.7)"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(45 87.5) rotate(-21.8)"/>
+      </svg>
+      <figcaption>48</figcaption>
+    </figure>
+
+    <figure>
+      <svg class="gl-logo" width="32" height="32" viewBox="0 0 100 100" role="img" aria-label="GarmentLine">
+        <path class="gl-panel-a" d="M20 0 L45.5 0 L35.5 25 L55.5 50 L35.5 75 L45.5 100 L20 100 A20 20 0 0 1 0 80 L0 20 A20 20 0 0 1 20 0 Z"/>
+        <path class="gl-panel-b" d="M54.5 0 L80 0 A20 20 0 0 1 100 20 L100 80 A20 20 0 0 1 80 100 L54.5 100 L44.5 75 L64.5 50 L44.5 25 Z"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(45 12.5) rotate(21.8)"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(50 37.5) rotate(-38.7)"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(50 62.5) rotate(38.7)"/>
+        <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(45 87.5) rotate(-21.8)"/>
+      </svg>
+      <figcaption>32</figcaption>
+    </figure>
+
+    <figure>
+      <svg class="gl-logo" width="20" height="20" viewBox="0 0 100 100" role="img" aria-label="GarmentLine">
+        <path class="gl-panel-a" d="M20 0 L50 0 L38 25 L62 50 L38 75 L50 100 L20 100 A20 20 0 0 1 0 80 L0 20 A20 20 0 0 1 20 0 Z"/>
+        <path class="gl-panel-b" d="M50 0 L80 0 A20 20 0 0 1 100 20 L100 80 A20 20 0 0 1 80 100 L50 100 L38 75 L62 50 L38 25 Z"/>
+      </svg>
+      <figcaption>20, plain</figcaption>
+    </figure>
+
+    <figure>
+      <svg class="gl-logo" width="16" height="16" viewBox="0 0 100 100" role="img" aria-label="GarmentLine">
+        <path class="gl-panel-a" d="M20 0 L50 0 L38 25 L62 50 L38 75 L50 100 L20 100 A20 20 0 0 1 0 80 L0 20 A20 20 0 0 1 20 0 Z"/>
+        <path class="gl-panel-b" d="M50 0 L80 0 A20 20 0 0 1 100 20 L100 80 A20 20 0 0 1 80 100 L50 100 L38 75 L62 50 L38 25 Z"/>
+      </svg>
+      <figcaption>16, plain</figcaption>
+    </figure>
+  </div>
+
+  <h2>Drop it in</h2>
+  <p>Same classes as the plain cut. <code>gl-logo--animate</code> plays once, <code>gl-logo--loop</code> keeps it running. On dark backgrounds set <code>--gl-ink: #FFFFFF</code> on any parent.</p>
+  <pre><code><span class="c">&lt;!-- markup --&gt;</span>
+&lt;svg class=<span class="g">"gl-logo gl-logo--animate"</span> width="40" height="40" viewBox="0 0 100 100"
+     role="img" aria-label="GarmentLine"&gt;
+  &lt;path class=<span class="g">"gl-panel-a"</span> d="M20 0 L45.5 0 L35.5 25 L55.5 50 L35.5 75 L45.5 100 L20 100
+    A20 20 0 0 1 0 80 L0 20 A20 20 0 0 1 20 0 Z"/&gt;
+  &lt;path class=<span class="g">"gl-panel-b"</span> d="M54.5 0 L80 0 A20 20 0 0 1 100 20 L100 80
+    A20 20 0 0 1 80 100 L54.5 100 L44.5 75 L64.5 50 L44.5 25 Z"/&gt;
+  &lt;rect class=<span class="g">"gl-stitch"</span> x="-11" y="-2.5" width="22" height="5" rx="2.5"
+        transform="translate(45 12.5) rotate(21.8)"/&gt;
+  &lt;rect class=<span class="g">"gl-stitch"</span> x="-11" y="-2.5" width="22" height="5" rx="2.5"
+        transform="translate(50 37.5) rotate(-38.7)"/&gt;
+  &lt;rect class=<span class="g">"gl-stitch"</span> x="-11" y="-2.5" width="22" height="5" rx="2.5"
+        transform="translate(50 62.5) rotate(38.7)"/&gt;
+  &lt;rect class=<span class="g">"gl-stitch"</span> x="-11" y="-2.5" width="22" height="5" rx="2.5"
+        transform="translate(45 87.5) rotate(-21.8)"/&gt;
+&lt;/svg&gt;
+
+<span class="c">/* css — adds to the plain cut */</span>
+.gl-logo .gl-stitch { fill: var(--gl-green, #1D9E75); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .gl-logo--animate .gl-stitch { animation: gl-stitch 320ms ease-out both; }
+  .gl-logo--animate .gl-stitch:nth-of-type(1) { animation-delay: 640ms; }
+  .gl-logo--animate .gl-stitch:nth-of-type(2) { animation-delay: 760ms; }
+  .gl-logo--animate .gl-stitch:nth-of-type(3) { animation-delay: 880ms; }
+  .gl-logo--animate .gl-stitch:nth-of-type(4) { animation-delay: 1000ms; }
+}
+@keyframes gl-stitch { from { opacity: 0; } to { opacity: 1; } }</code></pre>
+
+  <h2>Notes</h2>
+  <p>The seam here is a real gap rather than a colour change, so the mark sits on a photo or a coloured header without a background plate behind it.</p>
+  <p>Below 32px the stitches and the gap fall under a pixel and turn to mush. The 20 and 16 swatches above use the plain cut instead — keep both in the asset set and switch on size, the way an icon font ships separate optical sizes.</p>
+  <p>Stitches set after the panels land, so the sequence reads as joining then securing. Total run is about 1.3 seconds, which is at the top of what works for a login splash and too long for anything that fires on every navigation.</p>
+
+</div>
+
+<script>
+  var marks = document.querySelectorAll('.js-mark');
+
+  document.getElementById('replay').addEventListener('click', function () {
+    marks.forEach(function (m) {
+      m.classList.remove('gl-logo--loop', 'gl-logo--animate');
+      void m.offsetWidth;
+      m.classList.add('gl-logo--animate');
+    });
+  });
+
+  document.getElementById('loop').addEventListener('click', function (e) {
+    var on = marks[0].classList.contains('gl-logo--loop');
+    marks.forEach(function (m) {
+      m.classList.remove('gl-logo--animate');
+      m.classList.toggle('gl-logo--loop', !on);
+    });
+    e.currentTarget.textContent = on ? 'Loop it' : 'Stop looping';
+  });
+</script>
+</body>
+</html>

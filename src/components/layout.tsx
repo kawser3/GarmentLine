@@ -74,35 +74,33 @@ const NAV: { group: DictKey; items: NavItem[] }[] = [
 ];
 
 /**
- * The mark: a garment hanger.
+ * The mark: two panels joined by a topstitched seam.
  *
- * The one object that reads as "apparel" at 16px with no caption, which an
- * abstract glyph does not. Stroked and geometric so it belongs to the same
- * system as the rest of the interface, and drawn inline rather than loaded as
- * an image so it inherits the theme — public/favicon.svg is the same path on a
- * fixed violet tile, because a favicon cannot read a CSS variable.
+ * Drawn inline rather than loaded as an image so it takes --gl-ink and --gl-green
+ * from the theme — the ink panel would disappear into a black page otherwise.
+ * public/favicon.svg is the same geometry with the light pair baked in, because a
+ * favicon is rendered outside the page and cannot read a variable.
+ *
+ * Pass `animate` to play the seam closing: the panels arrive from opposite sides
+ * and the stitches land one after another. Used on the boot overlay, not on every
+ * sidebar render — a logo that re-animates on each navigation is a distraction.
  */
-export function BrandMark({ size = 26 }: { size?: number }) {
+export function BrandMark({ size = 26, animate = false }: { size?: number; animate?: boolean }) {
   return (
     <svg
-      className="brand-mark"
+      className={animate ? "brand-mark gl-logo gl-logo--animate" : "brand-mark gl-logo"}
       width={size}
       height={size}
-      viewBox="0 0 32 32"
+      viewBox="0 0 100 100"
       role="img"
       aria-label="GarmentLine"
     >
-      <rect width="32" height="32" rx="7.5" fill="var(--primary)" />
-      <g
-        fill="none"
-        stroke="var(--primary-fg)"
-        strokeWidth="2.1"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M16 12.4 V10.2 a2.4 2.4 0 1 1 2.4 -2.4" />
-        <path d="M16 12.4 L6.4 20.6 H25.6 Z" />
-      </g>
+      <path className="gl-panel-a" d="M20 0 L45.5 0 L35.5 25 L55.5 50 L35.5 75 L45.5 100 L20 100 A20 20 0 0 1 0 80 L0 20 A20 20 0 0 1 20 0 Z" />
+      <path className="gl-panel-b" d="M54.5 0 L80 0 A20 20 0 0 1 100 20 L100 80 A20 20 0 0 1 80 100 L54.5 100 L44.5 75 L64.5 50 L44.5 25 Z" />
+        <rect className="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(45 12.5) rotate(21.8)" />
+        <rect className="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(50 37.5) rotate(-38.7)" />
+        <rect className="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(50 62.5) rotate(38.7)" />
+        <rect className="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(45 87.5) rotate(-21.8)" />
     </svg>
   );
 }

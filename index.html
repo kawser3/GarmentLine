@@ -21,7 +21,7 @@
          there is no build step here that rasterises, and a <link> pointing at a PNG
          that nothing generates is how this file previously shipped a 404. -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="theme-color" content="#5b21b6" />
+    <meta name="theme-color" content="#147052" />
     <!-- viewport-fit=cover is required for env(safe-area-inset-*) to report anything but 0.
          It lets the page extend under a notch, which is only safe because the shell pads
          itself back out by those insets — see the safe-area block in src/index.css. -->
@@ -101,6 +101,35 @@
         align-items: center;
         gap: 18px;
       }
+      /*
+        The mark, inline. It is the one thing on screen before the bundle lands,
+        so it cannot be an <img> — a request for a logo is a request the overlay
+        exists to cover. Colours are repeated here rather than taken from
+        index.css for the same reason: that stylesheet has not loaded yet.
+      */
+      .preload-logo { width: 76px; height: 76px; display: block; }
+      .preload-logo .gl-panel-a { fill: #12211c; }
+      .preload-logo .gl-panel-b,
+      .preload-logo .gl-stitch { fill: #1d9e75; }
+      [data-theme="dark"] .preload-logo .gl-panel-a { fill: #e9eeec; }
+      [data-theme="dark"] .preload-logo .gl-panel-b,
+      [data-theme="dark"] .preload-logo .gl-stitch { fill: #2fbb8b; }
+
+      /* The seam closes: panels in from either side, then the stitches land. */
+      .preload-logo .gl-panel-a {
+        animation: gl-seam-a 900ms cubic-bezier(0.6, 0.02, 0.18, 1) both;
+      }
+      .preload-logo .gl-panel-b {
+        animation: gl-seam-b 900ms cubic-bezier(0.6, 0.02, 0.18, 1) both;
+      }
+      .preload-logo .gl-stitch { animation: gl-stitch 320ms ease-out both; }
+      .preload-logo .gl-stitch:nth-of-type(1) { animation-delay: 640ms; }
+      .preload-logo .gl-stitch:nth-of-type(2) { animation-delay: 760ms; }
+      .preload-logo .gl-stitch:nth-of-type(3) { animation-delay: 880ms; }
+      .preload-logo .gl-stitch:nth-of-type(4) { animation-delay: 1000ms; }
+      @keyframes gl-seam-a { from { transform: translateX(-24px); } to { transform: none; } }
+      @keyframes gl-seam-b { from { transform: translateX(24px); }  to { transform: none; } }
+      @keyframes gl-stitch { from { opacity: 0; } to { opacity: 1; } }
       .preload-name {
         font-size: 20px;
         font-weight: 650;
@@ -156,9 +185,16 @@
        */
       @media (prefers-reduced-motion: reduce) {
         .preload.enter,
-        .preload-bar::before {
+        .preload-bar::before,
+        .preload-logo .gl-panel-a,
+        .preload-logo .gl-panel-b,
+        .preload-logo .gl-stitch {
           animation: none;
         }
+        /* `both` holds the first keyframe, which for the stitches is opacity 0 —
+           cancelling the animation alone would leave the seam permanently
+           unstitched. The still frame has to be the finished mark. */
+        .preload-logo .gl-stitch { opacity: 1; }
         .preload-bar::before {
           width: 100%;
           opacity: 0.4;
@@ -182,6 +218,14 @@
     -->
     <div class="preload" id="boot-preload" role="status" aria-label="Loading GarmentLine">
       <span class="preload-mark">
+        <svg class="preload-logo" viewBox="0 0 100 100" aria-hidden="true">
+          <path class="gl-panel-a" d="M20 0 L45.5 0 L35.5 25 L55.5 50 L35.5 75 L45.5 100 L20 100 A20 20 0 0 1 0 80 L0 20 A20 20 0 0 1 20 0 Z"/>
+          <path class="gl-panel-b" d="M54.5 0 L80 0 A20 20 0 0 1 100 20 L100 80 A20 20 0 0 1 80 100 L54.5 100 L44.5 75 L64.5 50 L44.5 25 Z"/>
+          <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(45 12.5) rotate(21.8)"/>
+          <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(50 37.5) rotate(-38.7)"/>
+          <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(50 62.5) rotate(38.7)"/>
+          <rect class="gl-stitch" x="-11" y="-2.5" width="22" height="5" rx="2.5" transform="translate(45 87.5) rotate(-21.8)"/>
+        </svg>
         <span class="preload-name">GarmentLine</span>
         <span class="preload-bar" aria-hidden></span>
       </span>
