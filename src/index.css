@@ -6572,3 +6572,25 @@ th a:focus-visible {
   font-weight: 650;
   letter-spacing: -0.01em;
 }
+
+/* ------------------------------------------------------- table headers ----
+ *
+ * A light wash of the brand green, and a rule beneath it doing most of the work.
+ *
+ * Deliberately weak — 9%. Green is semantic here: --success marks Verified and
+ * Closed on badges and on the history rail, so a header row with any real green
+ * in it starts reading as "this table is fine" rather than as a heading. Past
+ * about 12% the subtle text also drops under 4.5:1 and fails AA outright.
+ *
+ * Mixed against --card rather than layered with alpha, because the header is
+ * `position: sticky` — a translucent background would let the rows scroll
+ * through it.
+ *
+ * Text lifts from --fg-subtle to --fg-muted: at 11.5px and weight 500 the old
+ * heading was fainter than the data under it, which is the wrong way round.
+ */
+.table th {
+  background: color-mix(in srgb, var(--gl-green) 9%, var(--card));
+  color: var(--fg-muted);
+  border-bottom: 2px solid color-mix(in srgb, var(--primary) 38%, transparent);
+}

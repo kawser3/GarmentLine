@@ -179,8 +179,12 @@ export function DashboardPage() {
         */}
         <div className="grid equal three">
           <Card title={t("page.dashboard.byLine")} sub={t("page.dashboard.last30")}>
+            {/* The brand green rather than the chart palette's default, which is a
+                blue carried over from the costing app these components came from.
+                Passed as the token, not a hex, so it follows the theme. */}
             <CategoryBars
               data={toPoints(byLine, 5)}
+              color="var(--gl-green)"
               formatValue={countOf}
               emptyLabel={t("empty.nothingThisMonth")}
             />
@@ -189,6 +193,7 @@ export function DashboardPage() {
           <Card title={t("page.dashboard.byBuyer")} sub={t("page.dashboard.last30")}>
             <CategoryBars
               data={toPoints(byBuyer, 5)}
+              color="var(--gl-green)"
               formatValue={countOf}
               emptyLabel={t("empty.nothingThisMonth")}
             />
