@@ -16,7 +16,7 @@
  *     produced a list, so a fallback is never passed off as the agent's work.
  */
 import { env } from "@/lib/env";
-import { getAccessToken } from "@/lib/auth-token";
+import { getAccessToken, loadStoredTokens, tryRefresh } from "@/lib/auth-token";
 import type { Department, IssueType, Severity } from "@/features/data/garment-schemas";
 
 export interface ParsedAction {
@@ -36,17 +36,6 @@ export interface ParseResult {
 
 /* ------------------------------------------------------------------ agent */
 
-/**
- * Query the Blocks AI service (agents.seliseblocks.com).
- *
- * The query endpoint answers over SSE, not a JSON body: lifecycle events stream first
- * (start, context, workflow_*, task_*) and the answer arrives as a `chat_response` event
- * whose payload carries the message. A `chat_error` event is a failure like a 4xx — the
- * catch in parseBuyerComment turns either into the fallback with an honest note.
- *
- * The model is addressed directly (model_name + model_provider from env) with the parsing
- * instructions as base context — no portal agent needs to exist for this to answer.
- */
 /** Read one SSE stream and return the `chat_response` message. Both AI routes speak it. */
 async function readChatStream(res: Response): Promise<string> {
   if (!res.body) throw new Error("AI service returned no stream");
@@ -88,6 +77,27 @@ async function readChatStream(res: Response): Promise<string> {
 }
 
 /**
+ * The session token, recovered the way the rest of the app recovers it.
+ *
+ * getAccessToken() reads a module variable that a reload empties, and this path
+ * threw on the spot when it came back null — while every other call in the app
+ * goes through blocks-api, which sends the request anyway and does
+ * refresh-then-retry on the 401. So the AI was the one feature that could fail
+ * on a lapsed session while the screen around it still worked from cache.
+ *
+ * sessionStorage first, because it survives the reload the in-memory value does
+ * not; then the same refresh the 401 path uses.
+ */
+async function sessionToken(): Promise<string | null> {
+  const inMemory = getAccessToken();
+  if (inMemory) return inMemory;
+  const stored = loadStoredTokens()?.accessToken;
+  if (stored) return stored;
+  if (await tryRefresh()) return getAccessToken();
+  return null;
+}
+
+/**
  * Query the Blocks AI service (agents.seliseblocks.com), by two routes.
  *
  * The AI subscription is attached to the ACCOUNT a token belongs to, not to the
@@ -101,13 +111,12 @@ async function readChatStream(res: Response): Promise<string> {
  * centrally rather than against whoever happens to be signed in. The direct model
  * route stays as the fallback for a build with no agent, and the deterministic
  * lexicon behind that. Every step names itself in the UI.
- *
- * Both routes answer over SSE, not a JSON body: lifecycle events stream first and
- * the answer arrives as a `chat_response`.
  */
 async function queryBlocksAgent(prompt: string, signal?: AbortSignal): Promise<string> {
-  const token = getAccessToken();
-  if (!token) throw new Error("No session token for the AI service");
+  const token = await sessionToken();
+  if (!token) {
+    throw new Error("your session has expired — sign in again to use the AI");
+  }
   const headers = {
     "Content-Type": "application/json",
     "x-blocks-key": env.projectKey,
