@@ -335,7 +335,9 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
         </div>
       )}
 
-      <div className="stack">
+      {/* The log of what has already been recorded is a separate section from the
+          composer above it, and ran straight on from the button. */}
+      <div className="stack comments-log">
         <h3>{t("ai.recorded")}</h3>
         {mine.length === 0 ? (
           <Empty title={t("ai.noComments")} />
