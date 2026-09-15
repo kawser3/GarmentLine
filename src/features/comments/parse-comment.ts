@@ -16,7 +16,7 @@
  *     produced a list, so a fallback is never passed off as the agent's work.
  */
 import { env } from "@/lib/env";
-import { getAccessToken, loadStoredTokens, tryRefresh } from "@/lib/auth-token";
+import { getAccessToken, loadStoredTokens } from "@/lib/auth-token";
 import type { Department, IssueType, Severity } from "@/features/data/garment-schemas";
 
 export interface ParsedAction {
@@ -98,24 +98,22 @@ async function readChatStream(res: Response): Promise<string> {
 }
 
 /**
- * The session token, recovered the way the rest of the app recovers it.
+ * The session token, read but never refreshed.
  *
- * getAccessToken() reads a module variable that a reload empties, and this path
- * threw on the spot when it came back null — while every other call in the app
- * goes through blocks-api, which sends the request anyway and does
- * refresh-then-retry on the 401. So the AI was the one feature that could fail
- * on a lapsed session while the screen around it still worked from cache.
+ * getAccessToken() holds a module variable that a reload empties, so
+ * sessionStorage is checked behind it — that survives the reload.
  *
- * sessionStorage first, because it survives the reload the in-memory value does
- * not; then the same refresh the 401 path uses.
+ * It deliberately does NOT call tryRefresh(). refreshSession() wipes the tokens
+ * and sets the store to anonymous whenever it cannot refresh — including the
+ * case where sign-in never returned a refresh token at all — so asking it to try
+ * is a coin flip on ending the session, and that is exactly what signed a user
+ * out on the deployed build when they parsed a comment. Parsing is an optional
+ * convenience with a working fallback behind it; nothing here is worth signing a
+ * merchandiser out mid-sentence. The 401 path in blocks-api owns refreshing,
+ * where a genuine data call is on the line.
  */
-async function sessionToken(): Promise<string | null> {
-  const inMemory = getAccessToken();
-  if (inMemory) return inMemory;
-  const stored = loadStoredTokens()?.accessToken;
-  if (stored) return stored;
-  if (await tryRefresh()) return getAccessToken();
-  return null;
+function sessionToken(): string | null {
+  return getAccessToken() ?? loadStoredTokens()?.accessToken ?? null;
 }
 
 /**
@@ -134,7 +132,7 @@ async function sessionToken(): Promise<string | null> {
  * lexicon behind that. Every step names itself in the UI.
  */
 async function queryBlocksAgent(prompt: string, signal?: AbortSignal): Promise<string> {
-  const token = await sessionToken();
+  const token = sessionToken();
   if (!token) {
     throw new Error("your session has expired — sign in again to use the AI");
   }
@@ -146,7 +144,7 @@ async function queryBlocksAgent(prompt: string, signal?: AbortSignal): Promise<s
 
   if (env.aiWidgetId) {
     try {
-      const res = await fetch(`${env.apiUrl}/agents-api/ai-agent/chat/${env.aiWidgetId}`, {
+      const res = await fetch(`${env.agentsUrl}/ai-agent/chat/${env.aiWidgetId}`, {
         method: "POST",
         signal,
         headers,
@@ -171,7 +169,7 @@ async function queryBlocksAgent(prompt: string, signal?: AbortSignal): Promise<s
     }
   }
 
-  const res = await fetch(`${env.apiUrl}/agents-api/ai-agent/query/stream`, {
+  const res = await fetch(`${env.agentsUrl}/ai-agent/query/stream`, {
     method: "POST",
     signal,
     headers,

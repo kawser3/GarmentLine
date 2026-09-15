@@ -23,6 +23,7 @@ interface RuntimeConfig {
   aiModelName?: string;
   aiModelProvider?: string;
   aiWidgetId?: string;
+  agentsUrl?: string;
 }
 
 declare global {
@@ -128,6 +129,21 @@ export const env = {
    * instead of against whoever happens to be signed in.
    */
   aiWidgetId: pick(runtime.aiWidgetId, import.meta.env.VITE_BLOCKS_AI_WIDGET_ID) ?? "",
+  /**
+   * Base URL of the AI service.
+   *
+   * The AI lives on its own host, not behind the API gateway, so it cannot be
+   * derived from apiUrl the way every other service can. In local dev it is
+   * reached through the Vite proxy at /agents-api, which makes it same-origin;
+   * that path exists ONLY in the dev server, so a deployed build asking for it
+   * hits the gateway host, which has no such route. The default therefore splits
+   * on whether we are behind the proxy.
+   */
+  agentsUrl:
+    pick(runtime.agentsUrl, import.meta.env.VITE_BLOCKS_AGENTS_URL) ??
+    (/^https?:\/\/localhost(:\d+)?$/i.test(apiUrl ?? "")
+      ? `${(apiUrl ?? "").replace(/\/+$/, "")}/agents-api`
+      : "https://agents.seliseblocks.com/api"),
 } as const;
 
 /** False when sign-in cannot work because no OIDC client is configured for this build. */
