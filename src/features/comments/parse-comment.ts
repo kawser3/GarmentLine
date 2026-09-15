@@ -61,17 +61,38 @@ async function readChatStream(res: Response): Promise<string> {
     }
   };
 
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
+  /* CRLF is legal in SSE and a proxy may rewrite the line endings, so normalise
+     before splitting — "\r\n\r\n" does not match a search for "\n\n". */
+  const drain = () => {
+    buffer = buffer.replace(/\r\n/g, "\n");
     for (;;) {
       const sep = buffer.indexOf("\n\n");
       if (sep === -1) break;
       handleBlock(buffer.slice(0, sep));
       buffer = buffer.slice(sep + 2);
     }
+  };
+
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    drain();
   }
+  /*
+   * Flush what is left.
+   *
+   * The loop above only ever handled blocks terminated by a blank line, so a
+   * stream whose LAST event arrives without a trailing newline — which is what
+   * comes back through the dev proxy — had that event silently dropped. When the
+   * dropped one was `chat_response`, the reader then reported that the stream had
+   * ended without an answer, which was true of what it had read and false of what
+   * had been sent.
+   */
+  buffer += decoder.decode();
+  drain();
+  if (buffer.trim()) handleBlock(buffer);
+
   if (answer == null) throw new Error("AI stream ended without an answer");
   return answer;
 }
