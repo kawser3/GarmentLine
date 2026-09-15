@@ -260,7 +260,7 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
           {drafts.length === 0 ? (
             <Empty title={t("ai.noneProposed")}>{t("ai.noneProposedHint")}</Empty>
           ) : (
-          <TableWrap>
+          <TableWrap variant="proposals">
 
               <thead>
                 <tr>
@@ -308,7 +308,7 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
                         {ISSUE_TYPES.map((x) => <option key={x} value={x}>{x}</option>)}
                       </select>
                     </td>
-                    <td>
+                    <td className="col-decision">
                       {d.decided ? (
                         d.decided === "Accepted" && d.issueId ? (
                           <>{t("ai.accepted")} → <Link to={`/issues/${d.issueId}`}>{t("ai.issue")}</Link></>
@@ -318,10 +318,10 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
                       ) : (
                         <div className="row-actions">
                           <Button size="sm" variant="primary" disabled={busy} onClick={() => decideRow(i, "Accepted")}>
-                            Accept
+                            {t("ai.accept")}
                           </Button>
                           <Button size="sm" variant="danger" disabled={busy} onClick={() => decideRow(i, "Rejected")}>
-                            Reject
+                            {t("ai.reject")}
                           </Button>
                         </div>
                       )}
@@ -343,7 +343,7 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
           <TableWrap>
 
               <thead>
-                <tr><th>{t("ai.received")}</th><th>{t("ai.channel")}</th><th>{t("ai.comment")}</th><th>{t("ai.parsed")}</th></tr>
+                <tr><th>{t("ai.received")}</th><th>{t("ai.channel")}</th><th className="col-comment">{t("ai.comment")}</th><th>{t("ai.parsed")}</th></tr>
               </thead>
               <tbody>
                 {mine.map((c) => {
@@ -353,11 +353,11 @@ export function BuyerCommentsPanel({ styleId, buyerId }: { styleId: string; buye
                     <tr key={c.ItemId}>
                       <td>{formatDate(c.ReceivedAt, locale)}</td>
                       <td><Badge>{c.Channel}</Badge></td>
-                      <td className="wrap">{c.RawText}</td>
+                      <td className="col-comment">{c.RawText}</td>
                       <td>
                         {c.ParsedAt ? (
                           <span>
-                            {accepted}/{its.length} accepted
+                            {t("ai.acceptedOf", { n: accepted, total: its.length })}
                             <div className="muted">{c.ParsedBy === "blocks-ai-agent" ? t("ai.engineAgent") : c.ParsedBy}</div>
                           </span>
                         ) : (

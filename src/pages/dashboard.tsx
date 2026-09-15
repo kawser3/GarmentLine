@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Badge, Card, ErrorAlert, Loading, Stat, TableWrap } from "@/components/ui";
+import { Badge, Button, Card, ErrorAlert, Loading, Stat, TableWrap } from "@/components/ui";
 import { CategoryBars, CategoryPie, type CatPoint } from "@/components/charts";
 import { PageHead } from "@/components/layout";
 import {
@@ -137,12 +137,18 @@ export function DashboardPage() {
                     <td>{t("stat.nDays", { n: a.WindowDays })}</td>
                     <td>{formatDate(a.DetectedAt, locale)}</td>
                     <td>
-                      {(a.IssueIds ?? []).map((id, n) => (
-                        <span key={id}>
-                          {n > 0 ? ", " : ""}
-                          <Link to={`/issues/${id}`}>issue {n + 1}</Link>
-                        </span>
-                      ))}
+                      {/* The evidence is the point of the row — a comma-separated
+                          run of "issue 1, issue 2" reads as prose and gives a
+                          finger nothing to hit. One target per occurrence. */}
+                      <div className="row-actions">
+                        {(a.IssueIds ?? []).map((id, n) => (
+                          <Link key={id} to={`/issues/${id}`}>
+                            <Button variant="quiet" size="sm">
+                              {t("ai.issue")} {n + 1}
+                            </Button>
+                          </Link>
+                        ))}
+                      </div>
                     </td>
                   </tr>
                 ))}

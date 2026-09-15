@@ -5522,8 +5522,46 @@ h3 {
   background: var(--card);
   border: 2px solid var(--border-strong);
 }
-.timeline li.tl-workflow::before { border-color: var(--primary); background: var(--primary); }
-.timeline li.tl-client::before { border-color: var(--success); }
+/*
+ * A history entry's colour, on the dot and on a short stub of rail beside it.
+ *
+ * Always alongside the Kind badge and the from → to line, never instead of them:
+ * an append-only record of who decided what cannot rest on hue, which is the
+ * first thing lost to a colourblind reader or a photocopy.
+ */
+.timeline li::after {
+  content: "";
+  position: absolute;
+  left: -24px;
+  top: 14px;
+  bottom: 4px;
+  width: 2px;
+  border-radius: 2px;
+  background: transparent;
+}
+.timeline li:last-child::after { display: none; }
+
+.timeline li.tl-raised::before   { border-color: var(--danger); background: var(--danger); }
+.timeline li.tl-danger::before   { border-color: var(--danger); background: var(--danger); }
+.timeline li.tl-progress::before { border-color: var(--warning); background: var(--warning); }
+.timeline li.tl-success::before  { border-color: var(--success); background: var(--success); }
+.timeline li.tl-note::before     { border-color: var(--border-strong); background: var(--card); }
+
+.timeline li.tl-raised::after,
+.timeline li.tl-danger::after   { background: color-mix(in srgb, var(--danger) 45%, transparent); }
+.timeline li.tl-progress::after { background: color-mix(in srgb, var(--warning) 45%, transparent); }
+.timeline li.tl-success::after  { background: color-mix(in srgb, var(--success) 45%, transparent); }
+
+/* Entries are read one after another, so they need air between them and a
+   readable body — 13.5px head over an unsized message was the wrong way round. */
+.timeline li { padding-bottom: 22px; }
+.tl-message {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--fg);
+  margin-top: 2px;
+  max-width: 78ch;
+}
 .tl-head {
   display: flex;
   flex-wrap: wrap;
@@ -6417,3 +6455,43 @@ th a:focus-visible {
 @keyframes gl-seam-a { from { transform: translateX(-24px); } to { transform: none; } }
 @keyframes gl-seam-b { from { transform: translateX(24px); }  to { transform: none; } }
 @keyframes gl-stitch { from { opacity: 0; } to { opacity: 1; } }
+
+/* ------------------------------------------------ wide and narrow columns ----
+ *
+ * `.wrap` was written into the buyer-comment table and never defined, so the
+ * column holding the raw comment — the longest text on the screen, and the thing
+ * the row exists to show — got the same share as the date beside it and wrapped
+ * to a thin ribbon.
+ *
+ * `width: 100%` on one cell of a table is the standard way to say "this column
+ * takes the slack": the others shrink to their content and this one absorbs what
+ * is left.
+ */
+.table .col-comment {
+  width: 100%;
+  min-width: 260px;
+  white-space: normal;
+  line-height: 1.55;
+}
+
+/* The opposite problem in the action list: a decision is two buttons and they
+   must not wrap onto two lines, so the column shrinks to fit and stays put. */
+.table .col-decision {
+  white-space: nowrap;
+  width: 1%;
+}
+
+/*
+ * The proposal table puts an editable field in five of its seven columns. Left
+ * to the browser those share the width evenly, which leaves every one of them
+ * too narrow to read what it holds. The action is the sentence a merchandiser
+ * checks before accepting, so it takes the room; the rest are short enums.
+ */
+.table.proposals td .input {
+  min-width: 0;
+  width: 100%;
+}
+/* Scoped to this table on purpose: an unqualified nth-child would resize the
+   second column of every register in the app. */
+.table.proposals th:nth-child(1) { width: 1%; }
+.table.proposals th:nth-child(2) { width: 34%; }

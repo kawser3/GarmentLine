@@ -219,10 +219,19 @@ export function ErrorAlert({ error }: { error: unknown }) {
  * `<TableFiller>` as the final row of the tbody — that row absorbs the slack, which is what
  * keeps the data rows at their natural height and opens the gap above the total.
  */
-export function TableWrap({ children, fill }: { children: ReactNode; fill?: boolean }) {
+export function TableWrap({
+  children,
+  fill,
+  variant,
+}: {
+  children: ReactNode;
+  fill?: boolean;
+  /** Extra class on the <table>, for column rules that must not reach every table. */
+  variant?: string;
+}) {
   return (
     <div className={cx("table-wrap", fill && "fill")}>
-      <table className="table">{children}</table>
+      <table className={cx("table", variant)}>{children}</table>
     </div>
   );
 }

@@ -27,6 +27,22 @@ function mayMove(to: Status, user: ReturnType<typeof useAuthStore.getState>["use
   return canRecordCorrection(user);
 }
 
+/**
+ * The colour a history entry carries.
+ *
+ * Paired with the Kind badge and the from → to line that were already there, never
+ * replacing them: colour alone would leave the trail unreadable to anyone who
+ * cannot separate the hues, and this is the record of who decided what.
+ */
+function toneOf(kind: string, to: string): string {
+  if (kind === "Rejected" || to === "Rejected") return "tl-danger";
+  if (to === "Verified" || to === "Closed") return "tl-success";
+  if (to === "CorrectionUnderWay" || to === "Corrected") return "tl-progress";
+  if (kind === "Raised") return "tl-raised";
+  if (to === "Reviewed") return "tl-progress";
+  return "tl-note";
+}
+
 export function IssueDetailPage() {
   const { id = "" } = useParams();
   const user = useAuthStore((s) => s.user);
@@ -137,13 +153,13 @@ export function IssueDetailPage() {
         ) : (
           <ol className="timeline">
             {timeline.map((e) => (
-              <li key={e.ItemId}>
+              <li key={e.ItemId} className={toneOf(e.Kind, e.ToStatus)}>
                 <div className="tl-head">
                   <strong>{e.ActorName}</strong>
                   <span className="tl-when">{formatDate(e.At, locale)} {formatClock(e.At, locale)}</span>
                   <Badge tone={e.Kind === "Rejected" ? "danger" : "info"}>{e.Kind}</Badge>
                 </div>
-                <div>{e.Message}</div>
+                <div className="tl-message">{e.Message}</div>
                 {e.FromStatus && e.ToStatus ? (
                   <div className="tl-change">
                     {STATUS_LABEL[e.FromStatus as Status] ?? e.FromStatus} →{" "}
