@@ -142,8 +142,11 @@ export function DashboardPage() {
                           finger nothing to hit. One target per occurrence. */}
                       <div className="row-actions">
                         {(a.IssueIds ?? []).map((id, n) => (
-                          <Link key={id} to={`/issues/${id}`}>
-                            <Button variant="quiet" size="sm">
+                          <Link key={id} to={`/issues/${id}`} className="evidence-link">
+                            {/* Default variant, not `quiet`: quiet draws no border and
+                                no background, so it reads as plain text until the
+                                pointer happens to land on it. */}
+                            <Button size="sm">
                               {t("ai.issue")} {n + 1}
                             </Button>
                           </Link>

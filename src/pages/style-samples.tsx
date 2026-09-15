@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { Badge, Button, Card, Empty, ErrorAlert, Field, Loading, TableWrap } from "@/components/ui";
 import {
   approvals as approvalsCrud, buyers, sampleVersions, stylesCrud,
@@ -180,7 +181,14 @@ export function StyleSamplesPage() {
         span
         title={`${style.StyleCode} — ${style.Name}`}
         sub={`${buyer?.Name ?? "Unknown buyer"} · ${style.Season} · ${style.OrderQty.toLocaleString()} pcs`}
-        actions={<Link to="/samples"><Button variant="quiet" size="sm">{t("sample.back")}</Button></Link>}
+        actions={
+          <Link to="/samples" className="back-link">
+            <Button size="sm">
+              <ArrowLeft size={15} aria-hidden />
+              {t("sample.back")}
+            </Button>
+          </Link>
+        }
       >
         <p>
           <strong>{t("sample.approvedVersion")} </strong>

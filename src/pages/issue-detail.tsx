@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Badge, Button, Card, Empty, ErrorAlert, Field, Loading, Select } from "@/components/ui";
+import { ArrowLeft } from "lucide-react";
+import { Alert, Badge, Button, Card, Empty, ErrorAlert, Field, Loading, Select } from "@/components/ui";
 import {
   NEXT_STATUS, STATUS_LABEL,
   buyers, issueEvents, issues as issuesCrud, linesCrud, stylesCrud,
@@ -129,7 +130,16 @@ export function IssueDetailPage() {
       <Card
         title={issue.Title}
         sub={`${issue.Type} · ${issue.Severity} · ${t("detail.raisedBy")} ${issue.RaisedByName || t("detail.unknown")}`}
-        actions={<Link to="/issues"><Button variant="quiet" size="sm">{t("detail.backToIssues")}</Button></Link>}
+        actions={
+          /* A real button, not `quiet`: quiet draws neither border nor background,
+             so the one way back off this page read as a line of text. */
+          <Link to="/issues" className="back-link">
+            <Button size="sm">
+              <ArrowLeft size={15} aria-hidden />
+              {t("detail.backToIssues")}
+            </Button>
+          </Link>
+        }
       >
         <p>{issue.Description}</p>
         <dl className="kv">
@@ -172,6 +182,19 @@ export function IssueDetailPage() {
         )}
 
         {/*
+          Settled is worth saying plainly — the issue is finished, not withheld —
+          so it gets an icon and a line of its own rather than a grey word wedged
+          between two buttons. A transition this role simply may not make stays
+          unannounced: the control is absent, which says the same thing without
+          the lecture.
+        */}
+        {NEXT_STATUS[issue.Status].length === 0 && (
+          <Alert tone="success" title={t("detail.settled")}>
+            {t("detail.settledBody")}
+          </Alert>
+        )}
+
+        {/*
           The composer belongs to whoever can act on an issue. It was rendered for
           every signed-in role, including one that may only read — an editable box
           and a live Add button, on an append-only register. A reader now gets the
@@ -201,14 +224,7 @@ export function IssueDetailPage() {
                     {t("detail.recordChange")}
                   </Button>
                 </>
-              ) : (
-                /* Settled is worth saying — the issue is done, not withheld. A
-                   transition this role simply may not make is not: the control
-                   is absent, which is the same answer without the lecture. */
-                NEXT_STATUS[issue.Status].length === 0 && (
-                  <span className="muted">{t("detail.settled")}</span>
-                )
-              )}
+              ) : null}
             </div>
           </>
         )}

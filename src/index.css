@@ -6495,3 +6495,66 @@ th a:focus-visible {
    second column of every register in the app. */
 .table.proposals th:nth-child(1) { width: 1%; }
 .table.proposals th:nth-child(2) { width: 34%; }
+
+/* An evidence button lifts toward the brand on hover, so it is obviously a way
+   through to the issue rather than a label that happens to be boxed. */
+.evidence-link { text-decoration: none; }
+.evidence-link .btn {
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.evidence-link:hover .btn {
+  background: var(--primary-soft);
+  border-color: var(--primary-border);
+  color: var(--primary);
+}
+.evidence-link:focus-visible .btn {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* The composer is a different act from reading the trail above it, and sat flush
+   against whatever ends that trail — the last entry, or the settled notice that
+   now follows it. Both need the same gap before the field begins. */
+.timeline + .field,
+.alert + .field { margin-top: 22px; }
+.timeline + .alert { margin-top: 20px; }
+.field + .row-actions { margin-top: 14px; }
+
+/* "Raised → Closed" is the substance of a status entry, not a footnote to it:
+   sized to be read, and tinted to match the dot on the same row. */
+.tl-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-family: var(--sans);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: var(--card-alt);
+  color: var(--fg-muted);
+  border: 1px solid var(--border);
+}
+.tl-danger .tl-change,
+.tl-raised .tl-change {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+}
+.tl-progress .tl-change {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 30%, transparent);
+}
+.tl-success .tl-change {
+  background: var(--success-bg);
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 30%, transparent);
+}
+
+/* A back control is a button with an arrow in it, so the gap between icon and
+   label is the button's own, and the wrapping link adds no underline of its own. */
+.back-link { text-decoration: none; }
+.back-link .btn { gap: 7px; }
