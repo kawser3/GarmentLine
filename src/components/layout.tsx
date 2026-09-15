@@ -85,10 +85,22 @@ const NAV: { group: DictKey; items: NavItem[] }[] = [
  * and the stitches land one after another. Used on the boot overlay, not on every
  * sidebar render — a logo that re-animates on each navigation is a distraction.
  */
-export function BrandMark({ size = 26, animate = false }: { size?: number; animate?: boolean }) {
+export function BrandMark({
+  size = 26,
+  animate = false,
+  loop = false,
+}: {
+  size?: number;
+  animate?: boolean;
+  /** Seam opens and closes forever — for a wait whose length is not known. */
+  loop?: boolean;
+}) {
   return (
     <svg
-      className={animate ? "brand-mark gl-logo gl-logo--animate" : "brand-mark gl-logo"}
+      className={
+        "brand-mark gl-logo" +
+        (loop ? " gl-logo--loop" : animate ? " gl-logo--animate" : "")
+      }
       width={size}
       height={size}
       viewBox="0 0 100 100"

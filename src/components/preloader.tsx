@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useIsFetching } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth";
+import { BrandMark } from "@/components/layout";
 
 
 /**
@@ -141,16 +142,21 @@ export function Preloader() {
   if (!visible) return null;
 
   /*
-   * The same treatment the boot overlay in index.html uses, so the React
-   * transition and the pre-bundle overlay are visibly one thing rather than two
-   * loaders that happen to look similar: the product name, and a single thin
-   * indeterminate bar as the only motion.
+   * The same mark the boot overlay in index.html paints, so the React transition
+   * and the pre-bundle overlay are visibly one thing rather than two loaders that
+   * happen to look similar.
+   *
+   * Looping, not assembling. The boot animation runs once because that wait ends
+   * when the bundle lands; a route transition ends when its data does, and a
+   * one-shot animation that finished while the page was still loading would sit
+   * there looking like a frozen screen. The seam carries the motion, so the thin
+   * indeterminate bar is gone — two things moving for one wait is one too many.
    */
   return (
     <div className="preload enter" role="status" aria-label="Loading…">
       <span className="preload-mark">
+        <BrandMark size={72} loop />
         <span className="preload-name">GarmentLine</span>
-        <span className="preload-bar" aria-hidden />
       </span>
     </div>
   );

@@ -6380,6 +6380,40 @@ th a:focus-visible {
   .gl-logo--animate .gl-stitch:nth-of-type(4) { animation-delay: 1000ms; }
 }
 
+/*
+ * The looping variant, for a wait of unknown length: the seam opens and closes
+ * rather than assembling once. The boot overlay assembles, because that wait ends
+ * when the bundle lands; a route transition ends when its data does, so its mark
+ * has to keep saying "working" for as long as that takes.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .gl-logo--loop .gl-panel-a {
+    animation: gl-seam-a-loop 4.4s cubic-bezier(0.6, 0.02, 0.18, 1) infinite;
+  }
+  .gl-logo--loop .gl-panel-b {
+    animation: gl-seam-b-loop 4.4s cubic-bezier(0.6, 0.02, 0.18, 1) infinite;
+  }
+  .gl-logo--loop .gl-stitch { animation: gl-stitch-loop 4.4s ease-in-out infinite; }
+  .gl-logo--loop .gl-stitch:nth-of-type(2) { animation-delay: 120ms; }
+  .gl-logo--loop .gl-stitch:nth-of-type(3) { animation-delay: 240ms; }
+  .gl-logo--loop .gl-stitch:nth-of-type(4) { animation-delay: 360ms; }
+}
+@keyframes gl-seam-a-loop {
+  0% { transform: translateX(-24px); }
+  24%, 86% { transform: none; }
+  100% { transform: translateX(-24px); }
+}
+@keyframes gl-seam-b-loop {
+  0% { transform: translateX(24px); }
+  24%, 86% { transform: none; }
+  100% { transform: translateX(24px); }
+}
+@keyframes gl-stitch-loop {
+  0%, 26% { opacity: 0; }
+  40%, 84% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 @keyframes gl-seam-a { from { transform: translateX(-24px); } to { transform: none; } }
 @keyframes gl-seam-b { from { transform: translateX(24px); }  to { transform: none; } }
 @keyframes gl-stitch { from { opacity: 0; } to { opacity: 1; } }
